@@ -159,6 +159,25 @@ the TrackChanges extension):
 **One-way binding** is deliberate: the editor owns its document to avoid
 cursor-jump feedback loops. Loading a different document = change the `:key`.
 
+### 5.1 `useTrackChangesReview(editorRef)` — headless review primitive
+
+For building a review surface (admin accepting a PI's suggestions), the Vue
+adapter also exports a **headless composable** (no markup, style-agnostic):
+
+```ts
+const review = useTrackChangesReview(editorRef) // editorRef = <TrackChangesEditor> template ref
+// review.suggestions   → Ref<SuggestionSummary[]>  (auto-refreshed on every doc change)
+// review.hasSuggestions → Ref<boolean>
+// review.accept(id) / reject(id) / acceptAll() / rejectAll()
+// review.getClean()    → accept-all JSON to persist
+```
+
+It binds to the editor's Tiptap `update` event to keep `suggestions` reactive,
+and accept/reject dispatch directly on the editor view — so they work even when
+the editor is **read-only / viewing** (read-only blocks *user* typing, not
+programmatic review actions). The host renders its own sidebar/inline UI; the
+package ships none. The demo page is its first consumer.
+
 ## 6. How this maps onto the platform
 
 Per the platform-extensibility rule, the live integration is **config + schema**,

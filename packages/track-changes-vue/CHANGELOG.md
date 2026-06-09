@@ -1,5 +1,14 @@
 # @tdg-reports/track-changes-vue
 
+## 0.3.0
+
+- Add `useTrackChangesReview(editorRef)` — a headless review composable that
+  returns a reactive `suggestions` list (auto-refreshed on every doc change)
+  plus `accept` / `reject` / `acceptAll` / `rejectAll` / `getClean` helpers.
+  Ships no markup (style-agnostic); the host renders its own review UI. Accept/
+  reject dispatch directly on the editor view, so they work even when the
+  editor is read-only / viewing.
+
 ## 0.2.0
 
 - Export a runtime `VERSION` constant, injected at build time by tsup from
