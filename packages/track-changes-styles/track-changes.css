@@ -1,0 +1,48 @@
+/*
+ * Track-changes rendering — screen + print.
+ *
+ * Suggestions are real <ins>/<del> elements (see track-changes-core marks), so
+ * print and Browserless-generated PDFs render the markup for free. The "clean"
+ * document has no ins/del, so it prints without marks automatically.
+ *
+ * Colours use CSS variables with sensible fallbacks so a host app can theme
+ * them (per the platform theming rule) without overriding this file.
+ */
+
+.tc-ins {
+  color: var(--tc-ins-color, #15803d);
+  background: var(--tc-ins-bg, rgba(34, 197, 94, 0.14));
+  text-decoration: underline;
+  text-decoration-color: var(--tc-ins-color, #15803d);
+}
+
+.tc-del {
+  color: var(--tc-del-color, #b91c1c);
+  background: var(--tc-del-bg, rgba(239, 68, 68, 0.12));
+  text-decoration: line-through;
+  text-decoration-color: var(--tc-del-color, #b91c1c);
+}
+
+/* Editor surface niceties (optional; host may override). */
+.tc-editor .ProseMirror {
+  outline: none;
+  min-height: 8rem;
+}
+
+.tc-editor .ProseMirror:focus {
+  outline: none;
+}
+
+@media print {
+  .tc-ins {
+    color: #000;
+    background: transparent;
+    text-decoration: underline;
+  }
+
+  .tc-del {
+    color: #000;
+    background: transparent;
+    text-decoration: line-through;
+  }
+}

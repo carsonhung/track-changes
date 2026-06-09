@@ -1,9 +1,12 @@
 # RFC — Track Changes (Suggesting Mode) for Rich-Text Form Fields
 
-> **Status:** Draft / **Future work — NOT in scope for the pilot test.**
-> This document records the design intent so it can be picked up later. Nothing
-> here is implemented in the current pilot; it is captured now while the
-> requirements are fresh. Related: tester feedback comment **A4** in
+> **Status:** **Phase 1 implemented (v0.36.0).** Headless core + inline-text
+> suggesting + Vue adapter + print/screen CSS shipped as standalone
+> `@tdg-reports/track-changes-*` packages, exercised by a demo sandbox at
+> `/admin/track-changes-demo`. **Not yet wired into the live report flow** —
+> P2 (atom nodes/tables + `richtext` field), P3 (React), and P4
+> (collaboration) remain future work. See `docs/track-changes-architecture.md`
+> for what shipped. Related: tester feedback comment **A4** in
 > `docs/tester-feedback-plan.md`.
 
 ## 1. Motivation

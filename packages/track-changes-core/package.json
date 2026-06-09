@@ -1,0 +1,40 @@
+{
+  "name": "@tdg-reports/track-changes-core",
+  "version": "0.1.0",
+  "description": "Headless track-changes (suggesting mode) engine for ProseMirror/Tiptap. Phase 1: inline text (insert/delete/accept/reject/clean).",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "peerDependencies": {
+    "@tiptap/core": "^2.0.0",
+    "@tiptap/pm": "^2.0.0"
+  },
+  "devDependencies": {
+    "@tiptap/core": "^2.11.0",
+    "@tiptap/pm": "^2.11.0",
+    "tsup": "^8.3.0",
+    "typescript": "~5.9.3",
+    "vitest": "^2.1.0"
+  }
+}

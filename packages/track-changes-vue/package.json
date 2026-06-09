@@ -1,0 +1,43 @@
+{
+  "name": "@tdg-reports/track-changes-vue",
+  "version": "0.1.0",
+  "description": "Vue 3 adapter for @tdg-reports/track-changes-core: a thin <TrackChangesEditor> built on @tiptap/vue-3.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "peerDependencies": {
+    "@tdg-reports/track-changes-core": "*",
+    "@tiptap/core": "^2.0.0",
+    "@tiptap/starter-kit": "^2.0.0",
+    "@tiptap/vue-3": "^2.0.0",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@tdg-reports/track-changes-core": "*",
+    "@tiptap/core": "^2.11.0",
+    "@tiptap/starter-kit": "^2.11.0",
+    "@tiptap/vue-3": "^2.11.0",
+    "tsup": "^8.3.0",
+    "typescript": "~5.9.3",
+    "vue": "^3.5.29"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@tdg-reports/track-changes-styles",
+  "version": "0.1.0",
+  "description": "Screen + print CSS for track-changes ins/del rendering.",
+  "license": "MIT",
+  "exports": {
+    "./track-changes.css": "./track-changes.css"
+  },
+  "files": [
+    "track-changes.css"
+  ]
+}
