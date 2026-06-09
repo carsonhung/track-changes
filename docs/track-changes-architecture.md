@@ -159,24 +159,35 @@ the TrackChanges extension):
 **One-way binding** is deliberate: the editor owns its document to avoid
 cursor-jump feedback loops. Loading a different document = change the `:key`.
 
-## 6. How this maps onto the platform (future, not yet wired)
+## 6. How this maps onto the platform
 
 Per the platform-extensibility rule, the live integration is **config + schema**,
-not new core code:
+not new core code. The first two steps are **implemented (v0.36.2)**; the live
+report wiring is the next increment.
 
-1. Add a `richtext` field type to `rh_form_schemas` (UI schema).
-2. `SchemaFormRenderer` renders `richtext` fields with `<TrackChangesEditor>`.
-3. Report "revise" state (tester A4) sets `mode="suggesting"` for the PI;
-   admin reviews with the suggestions sidebar and accepts; `getClean()` is what
-   `PATCH /form-data` persists. The marked-up + baseline docs are kept for audit.
-4. PDF export already works because marks are real `<ins>`/`<del>` elements.
+1. **[done]** `richtext` field type — `FormField.type` accepts `'richtext'`
+   (value = ProseMirror JSON, not a string), with an optional
+   `richtextMode: 'editing' | 'suggesting' | 'viewing'`.
+2. **[done]** `SchemaFormRenderer` renders `richtext` fields with
+   `<TrackChangesEditor>`, **lazy-loaded** (`defineAsyncComponent`) so the heavy
+   Tiptap/ProseMirror chunk is fetched only when a schema actually contains a
+   richtext field — text/likert-only report forms stay lean. Mode derives from
+   `readonly` (→ `viewing`) else the field's `richtextMode`. Demonstrated on
+   `/admin/track-changes-demo` ("As a schema form field"). Adding a richtext
+   field to a real form is therefore a **JSON schema change**, not code.
+3. **[next]** Report "revise" state (tester A4) sets `mode="suggesting"` for the
+   PI; admin reviews with the suggestions sidebar and accepts; `getClean()` is
+   what `PATCH /form-data` persists. The marked-up + baseline docs are kept for
+   audit.
+4. **[free]** PDF export already works because marks are real `<ins>`/`<del>`
+   elements.
 
 ## 7. Phasing
 
 | Phase | Scope | Status |
 |---|---|---|
-| **P1** | headless core + inline text + Vue adapter + print CSS + demo | **done (v0.36.0)** |
-| P2 | atom nodes (images), tables; `richtext` field + live report wiring | future |
+| **P1** | headless core + inline text + Vue adapter + print CSS + demo + `richtext` field type (schema-renderer seam) | **done (v0.36.0 / .2)** |
+| P2 | atom nodes (images), tables; **live report revise-and-resubmit wiring** (tester A4) | next |
 | P3 | React adapter from the same core | future |
 | P4 | collaboration (CRDT/OT) over the same mark model | future |
 
