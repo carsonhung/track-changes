@@ -1,4 +1,9 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'tsup';
+
+const { version } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { version: string };
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -7,6 +12,8 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   target: 'es2022',
+  // Single-source the runtime VERSION from package.json (no drift).
+  define: { __TC_VERSION__: JSON.stringify(version) },
   // ProseMirror + Tiptap are peer-owned by the host app (single instance).
   external: [/^@tiptap\//],
 });

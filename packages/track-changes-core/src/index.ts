@@ -45,3 +45,5 @@ export { TrackChanges, InsertionMark, DeletionMark, createTrackChangesExtension 
 export type { TrackChangesExtensionOptions } from './tiptap';
 
 export { withSuggestionMarks, createBasicSuggestionSchema } from './schema';
+
+export { VERSION } from './version';

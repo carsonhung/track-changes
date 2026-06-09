@@ -10,7 +10,6 @@ import {
   setSuggesting,
 } from './commands';
 import { acceptOn, rejectOn, listSuggestions, toClean } from './clean';
-import { INSERTION } from './marks';
 
 const schema = createBasicSuggestionSchema();
 
