@@ -188,8 +188,8 @@ resubmit admin review both consume this one panel.
 ## 6. How this maps onto the platform
 
 Per the platform-extensibility rule, the live integration is **config + schema**,
-not new core code. The first two steps are **implemented (v0.36.2)**; the live
-report wiring is the next increment.
+not new core code. All four steps below are **implemented** (the live report
+revise-and-resubmit wiring landed in v0.37.0 — see §6.1).
 
 1. **[done]** `richtext` field type — `FormField.type` accepts `'richtext'`
    (value = ProseMirror JSON, not a string), with an optional
@@ -201,19 +201,48 @@ report wiring is the next increment.
    `readonly` (→ `viewing`) else the field's `richtextMode`. Demonstrated on
    `/admin/track-changes-demo` ("As a schema form field"). Adding a richtext
    field to a real form is therefore a **JSON schema change**, not code.
-3. **[next]** Report "revise" state (tester A4) sets `mode="suggesting"` for the
-   PI; admin reviews with the suggestions sidebar and accepts; `getClean()` is
-   what `PATCH /form-data` persists. The marked-up + baseline docs are kept for
-   audit.
+3. **[done, v0.37.0]** Report "revise" state (tester A4) — see §6.1 below.
 4. **[free]** PDF export already works because marks are real `<ins>`/`<del>`
    elements.
+
+### 6.1 Live report revise-and-resubmit (v0.37.0)
+
+Wired into the existing revise flow (an admin `revise` clarification re-opens the
+report as a draft). No DB migration was needed — the richtext value is a
+ProseMirror JSON doc stored inside the existing `formData` blob, and the marks
+fully encode both the baseline (reject-all) and the proposed text (accept-all),
+so no separate baseline column is required.
+
+- **Schema** — Section 5 ("Report on Project Progress") narrative fields are
+  `richtext`. Switching a field from `textarea` to `richtext` is loss-free:
+  `SchemaFormRenderer` coerces any legacy/seeded string into a paragraph doc.
+- **PI/PC (suggesting)** — while an open `revise` clarification exists,
+  `ReportDetailPage` passes `richtextModeOverride="suggesting"` so the
+  applicant's edits land as tracked insertions/deletions over their previous
+  submission instead of silently overwriting it. On resubmit, `formData` carries
+  the tracked docs.
+- **Admin (review)** — the resubmitted form renders read-only (`viewing`, inline
+  `<ins>`/`<del>`). A page-level review panel calls the renderer's exposed
+  `acceptAllSuggestions()` / `rejectAllSuggestions()` (which drive every richtext
+  editor at once, via the core — no duplicated logic), then persists the cleaned
+  docs through `PATCH /form-data` and reloads. Pending-revision detection is a
+  pure JSON mark scan, so no editor needs mounting just to show the "N tracked
+  changes" badge.
+- **Backend** — `patchReportFormData` now permits admins to save during
+  `submitted` / `admin_review` (the documented "admin edits the report directly"
+  rule), recorded as a `report.admin_edited` audit entry. PI/PC remain
+  restricted to `draft`.
+- **Per-change admin review** of a single field reuses `SuggestionReviewPanel`
+  (§5.1) bound to that field's editor; the multi-field report form uses the
+  bulk accept/reject path above.
 
 ## 7. Phasing
 
 | Phase | Scope | Status |
 |---|---|---|
 | **P1** | headless core + inline text + Vue adapter + print CSS + demo + `richtext` field type (schema-renderer seam) | **done (v0.36.0 / .2)** |
-| P2 | atom nodes (images), tables; **live report revise-and-resubmit wiring** (tester A4) | next |
+| **P2a** | headless `useTrackChangesReview` + reusable `SuggestionReviewPanel`; **live report revise-and-resubmit wiring** (tester A4) | **done (v0.36.4 / 0.37.0)** |
+| P2b | atom nodes (images), tables | next |
 | P3 | React adapter from the same core | future |
 | P4 | collaboration (CRDT/OT) over the same mark model | future |
 
