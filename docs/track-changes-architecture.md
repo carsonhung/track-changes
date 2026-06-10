@@ -176,7 +176,14 @@ It binds to the editor's Tiptap `update` event to keep `suggestions` reactive,
 and accept/reject dispatch directly on the editor view — so they work even when
 the editor is **read-only / viewing** (read-only blocks *user* typing, not
 programmatic review actions). The host renders its own sidebar/inline UI; the
-package ships none. The demo page is its first consumer.
+package ships none.
+
+The app's styled consumer of this composable is
+`components/common/SuggestionReviewPanel.vue` (shadcn Card + per-change/bulk
+accept/reject, props `editorRef` / `authorLabels`, emits `change`). The package
+stays headless; the styled, terminology-aware panel lives in the app — the same
+split as the editor itself. The demo page and the future report revise-and-
+resubmit admin review both consume this one panel.
 
 ## 6. How this maps onto the platform
 
