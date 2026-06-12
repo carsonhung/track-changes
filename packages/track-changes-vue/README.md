@@ -97,7 +97,7 @@ const upload = async (file: File) => ({ src: await myBackend.upload(file) })
 | `extensions` | Tiptap `Extensions` | `[]` | Extra raw extensions, for hosts that need more than the built-in features. |
 | `uploadHandler` | `EditorUploadHandler \| null` | `null` | Host upload transport: `(file: File) => Promise<{ src, alt? }>`. |
 | `maxCharacters` | `number \| null` | `null` | Soft character cap: shows a clean-projection counter footer ("123 / 2,000") with an over-limit state. Input is never hard-blocked (tracked deletions keep text in the doc) — enforce at submit time via the same projection (`countCleanText`). |
-| `maxWords` | `number \| null` | `null` | Soft word cap ("45 / 500w"), same semantics as `maxCharacters`; either or both can be set, and the footer highlights whichever cap is exceeded. |
+| `maxWords` | `number \| null` | `null` | Soft word cap ("45 / 500w"), same semantics as `maxCharacters`; either or both can be set, and the footer highlights whichever cap is exceeded. Word counting is CJK-aware (each Chinese/Japanese character counts as one word, the MS Word 字数 convention; Latin text splits on whitespace; mixed text composes). |
 | `showCharacterCount` | `boolean` | `false` | Show the counter footer even without a cap. |
 
 Imperative API via template ref (`TrackChangesEditorApi`): `accept(id)`,

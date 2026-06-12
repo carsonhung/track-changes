@@ -4,7 +4,14 @@ import type { Node as PMNode } from '@tiptap/pm/model';
 import { createExtendedSuggestionSchema } from './schema';
 import { createSuggestingPlugins } from './plugin';
 import { suggestInsertNodes, suggestDeleteNodes } from './commands';
-import { toClean, toRejected, listSuggestions, countCleanText, hasSuggestions } from './clean';
+import {
+  toClean,
+  toRejected,
+  listSuggestions,
+  countCleanText,
+  countWords,
+  hasSuggestions,
+} from './clean';
 
 const schema = createExtendedSuggestionSchema();
 
@@ -135,5 +142,34 @@ describe('countCleanText', () => {
     expect(countCleanText(two)).toEqual({ characters: 12, words: 3 });
     const empty = schema.node('doc', null, [schema.node('paragraph')]);
     expect(countCleanText(empty)).toEqual({ characters: 0, words: 0 });
+  });
+
+  it('counts each CJK character as one word (MS Word 字数 convention)', () => {
+    // 7 Chinese characters, no spaces — must not collapse into "1 word".
+    const zh = schema.node('doc', null, [para('本項目進展順利')]);
+    expect(countCleanText(zh)).toEqual({ characters: 7, words: 7 });
+
+    // Mixed Chinese + Latin: 7 CJK chars + 2 English words.
+    const mixed = schema.node('doc', null, [para('本项目使用 machine learning 方法')]);
+    expect(countCleanText(mixed).words).toBe(9);
+
+    // Japanese kana counts per character too; Korean splits on spaces.
+    expect(countWords('ひらがな')).toBe(4);
+    expect(countWords('안녕하세요 세계')).toBe(2);
+  });
+
+  it('counts emoji and surrogate-pair characters as one character', () => {
+    const doc = schema.node('doc', null, [para('a😀b')]);
+    expect(countCleanText(doc).characters).toBe(3);
+  });
+});
+
+describe('countWords (plain string)', () => {
+  it('handles punctuation around CJK without counting it', () => {
+    // CJK punctuation (，。) is not in the word ranges and carries no spaces;
+    // it merges adjacent Latin runs only if no whitespace separates them.
+    expect(countWords('進展順利，成果豐碩。')).toBe(8);
+    expect(countWords('')).toBe(0);
+    expect(countWords('   ')).toBe(0);
   });
 });

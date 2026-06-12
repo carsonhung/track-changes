@@ -266,22 +266,54 @@ export function toTracked(doc: PMNode): PMNode {
 }
 
 /**
+ * CJK characters that count as one word each (the MS Word "字数" convention,
+ * since these scripts don't separate words with spaces): Han ideographs
+ * (unified + extension A + compatibility) and Japanese kana. Hangul is
+ * excluded — Korean uses spaces between words, so whitespace splitting is
+ * already correct for it.
+ */
+const CJK_CHAR = /[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3040-\u30FF]/gu;
+
+/**
+ * CJK punctuation and full-width forms (，。「」！？ etc.) — word separators,
+ * never words themselves.
+ */
+const CJK_PUNCT = /[\u3000-\u303F\uFF00-\uFFEF]/gu;
+
+/**
+ * Word count of a plain-text string: every CJK character is one word, and the
+ * remaining (non-CJK) text counts whitespace-separated runs; CJK punctuation
+ * separates without counting. Mixed text works naturally —
+ * "本项目使用 machine learning 方法" = 7 CJK + 2 Latin = 9.
+ */
+export function countWords(text: string): number {
+  const cjk = text.match(CJK_CHAR)?.length ?? 0;
+  const rest = text.replace(CJK_CHAR, ' ').replace(CJK_PUNCT, ' ');
+  const latin = rest.split(/\s+/).filter(Boolean).length;
+  return cjk + latin;
+}
+
+/**
  * Character/word counts of the clean (accept-all) projection — i.e. what the
  * document will contain once suggestions are accepted, so a pending deletion
  * stops counting immediately and a pending insertion counts right away.
- * Characters = sum of text lengths (block breaks and atoms don't count);
- * words = whitespace-separated runs with block boundaries as separators.
+ * Characters = Unicode code points of the text content (block breaks and
+ * atoms don't count; CJK characters count one each, surrogate pairs such as
+ * emoji also count one). Words follow `countWords` (CJK chars count one word
+ * each, other scripts split on whitespace, block boundaries separate).
  */
 export function countCleanText(doc: PMNode): { characters: number; words: number } {
   const clean = toClean(doc);
   let characters = 0;
   clean.descendants((n) => {
-    if (n.isText && n.text) characters += n.text.length;
+    if (n.isText && n.text) {
+      // Code points, not UTF-16 units: an emoji or rare ideograph counts 1.
+      for (const _ of n.text) characters += 1;
+    }
     return undefined;
   });
   const text = clean.textBetween(0, clean.content.size, ' ');
-  const words = text.split(/\s+/).filter(Boolean).length;
-  return { characters, words };
+  return { characters, words: countWords(text) };
 }
 
 // ---------------------------------------------------------------------------

@@ -40,6 +40,7 @@ export {
   toRejected,
   toTracked,
   countCleanText,
+  countWords,
   listSuggestions,
   hasSuggestions,
 } from './clean';

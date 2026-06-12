@@ -1,5 +1,17 @@
 # @tdg-reports/track-changes-core
 
+## 0.8.0
+
+- **CJK-aware word counting.** `countCleanText` (and the new exported
+  `countWords(text)` helper) now follow the MS Word "字数" convention: every
+  Han ideograph and Japanese kana character counts as one word, non-CJK text
+  still counts whitespace-separated runs, and CJK punctuation (，。「」…)
+  separates without counting. Mixed text composes naturally
+  ("本项目使用 machine learning 方法" = 9). Previously an unspaced Chinese
+  paragraph counted as a single word. Korean is unaffected (Hangul uses
+  spaces). Character counting now counts Unicode code points, so emoji and
+  surrogate-pair ideographs count as one character instead of two.
+
 ## 0.7.0
 
 - **Grouped multi-node suggestions (`suggestInsertNodes` /
