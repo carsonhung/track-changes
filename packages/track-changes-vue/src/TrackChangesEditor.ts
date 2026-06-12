@@ -26,6 +26,7 @@ import {
   rejectAllOn,
   listSuggestions,
   toClean,
+  countCleanText,
   tagSuggestionTx,
   docToHtml,
   type SuggestionSummary,
@@ -134,6 +135,18 @@ export default defineComponent({
       type: Function as unknown as PropType<EditorUploadHandler | null>,
       default: null,
     },
+    /**
+     * Soft character limit. When set, a footer shows the clean-projection
+     * character/word count ("123 / 2,000") and turns into an over-limit state
+     * past the cap. The count is of the *accept-all projection*: a pending
+     * deletion stops counting immediately, a pending insertion counts right
+     * away. Input is never hard-blocked (in suggesting mode the tracked text
+     * physically stays in the doc, so blocking would be wrong) — enforce at
+     * submit/validation time via the same projection.
+     */
+    maxCharacters: { type: Number as PropType<number | null>, default: null },
+    /** Show the character/word footer even without a `maxCharacters` cap. */
+    showCharacterCount: { type: Boolean, default: false },
   },
   emits: {
     'update:modelValue': (_value: Json | string) => true,
@@ -264,13 +277,38 @@ export default defineComponent({
       );
     };
 
+    const renderCharacterCount = (ed: Editor) => {
+      if (props.maxCharacters == null && !props.showCharacterCount) return null;
+      void editorTick.value; // subscribe: recount on every editor transaction
+      const { characters, words } = countCleanText(ed.state.doc);
+      const over = props.maxCharacters != null && characters > props.maxCharacters;
+      const charText =
+        props.maxCharacters != null
+          ? `${characters.toLocaleString()} / ${props.maxCharacters.toLocaleString()}`
+          : characters.toLocaleString();
+      return h(
+        'div',
+        {
+          class: ['tc-charcount', { 'tc-charcount--over': over }],
+          role: 'status',
+          'aria-live': 'polite',
+        },
+        [
+          h('span', { class: 'tc-charcount-chars' }, charText),
+          h('span', { class: 'tc-charcount-words' }, ` · ${words.toLocaleString()}w`),
+        ],
+      );
+    };
+
     return () => {
       const ed = editor.value;
       if (!ed) return h('div', { class: 'tc-editor' });
       const toolbar = renderToolbar(ed);
+      const charCount = renderCharacterCount(ed);
       return h('div', { class: 'tc-editor' }, [
         ...(toolbar ? [toolbar] : []),
         h(EditorContent, { editor: ed }),
+        ...(charCount ? [charCount] : []),
       ]);
     };
   },

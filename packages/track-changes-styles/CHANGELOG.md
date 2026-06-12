@@ -1,5 +1,13 @@
 # @tdg-reports/track-changes-styles
 
+## 0.6.0
+
+- Table header cells: `.tc-table th` (border + padding shared with `td`,
+  tinted background via `--tc-table-header-bg`, bold, left-aligned).
+- Character-count footer: `.tc-charcount` (muted, right-aligned, themable
+  via `--tc-charcount-fg`) with `.tc-charcount--over`
+  (`--tc-charcount-over-fg`) for the soft-limit state; hidden in print.
+
 ## 0.5.0
 
 - P2f: tracked-formatting highlight. New `.tc-fmt` (amber background +

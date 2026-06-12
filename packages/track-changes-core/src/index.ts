@@ -39,6 +39,7 @@ export {
   toClean,
   toRejected,
   toTracked,
+  countCleanText,
   listSuggestions,
   hasSuggestions,
 } from './clean';
@@ -52,7 +53,9 @@ export {
   suggestDeleteBackward,
   suggestDeleteForward,
   suggestInsertNode,
+  suggestInsertNodes,
   suggestDeleteNode,
+  suggestDeleteNodes,
   acceptSuggestion,
   rejectSuggestion,
   acceptAllSuggestions,

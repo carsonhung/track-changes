@@ -211,8 +211,13 @@ export const suggestDeleteForward: Command = (state, dispatch) => {
 // ---------------------------------------------------------------------------
 
 /** Wrap a node as a tracked insertion (inline → mark; block → `suggestion` attr). */
-function trackInserted(schema: Schema, node: PMNode, authorId: string | null): PMNode {
-  const attrs = { id: createSuggestionId(), authorId, ts: Date.now() };
+function trackInserted(
+  schema: Schema,
+  node: PMNode,
+  authorId: string | null,
+  shared?: { id: string; authorId: string | null; ts: number },
+): PMNode {
+  const attrs = shared ?? { id: createSuggestionId(), authorId, ts: Date.now() };
   if (node.isInline) {
     return node.mark(insertionType(schema).create(attrs).addToSet(node.marks));
   }
@@ -248,6 +253,63 @@ export function suggestInsertNode(node: PMNode, at?: number): Command {
     const tracked = trackInserted(state.schema, node, authorId);
     tr.insert(pos, tracked);
     tr.setSelection(Selection.near(tr.doc.resolve(pos + tracked.nodeSize)));
+    if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
+    return true;
+  };
+}
+
+/**
+ * Insert several nodes at explicit positions as ONE tracked insertion: every
+ * node carries the same suggestion id, so the whole group accepts/rejects
+ * atomically (e.g. a table column = one cell per row, reviewed as a single
+ * change). Positions refer to the current document; inserts are applied in
+ * descending position order so earlier positions stay valid.
+ */
+export function suggestInsertNodes(inserts: Array<{ node: PMNode; at: number }>): Command {
+  return (state, dispatch) => {
+    if (!inserts.length) return false;
+    const authorId = getTrackChangesState(state).authorId;
+    const shared = { id: createSuggestionId(), authorId, ts: Date.now() };
+    const tr = state.tr;
+    for (const { node, at } of [...inserts].sort((a, b) => b.at - a.at)) {
+      tr.insert(at, trackInserted(state.schema, node, authorId, shared));
+    }
+    if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
+    return true;
+  };
+}
+
+/**
+ * Suggest deletion of several block/structural nodes as ONE tracked deletion
+ * (shared suggestion id — the group accepts/rejects atomically, e.g. a table
+ * column). Per node, the same rules as `suggestDeleteNode` apply: the author's
+ * own un-accepted insertion is removed for real; already-deletion-marked nodes
+ * are skipped. Positions are processed descending so real deletes keep the
+ * remaining positions valid (`setNodeMarkup` is size-stable anyway).
+ */
+export function suggestDeleteNodes(positions: number[]): Command {
+  return (state, dispatch) => {
+    if (!positions.length) return false;
+    const authorId = getTrackChangesState(state).authorId;
+    const shared = { id: createSuggestionId(), authorId, ts: Date.now() };
+    const tr = state.tr;
+    let touched = false;
+    for (const pos of [...positions].sort((a, b) => b - a)) {
+      const node = state.doc.nodeAt(pos);
+      if (!node || node.isInline || !isTrackableNode(node)) continue;
+      const existing = readNodeSuggestion(node);
+      if (existing?.type === 'deletion') continue;
+      if (existing?.type === 'insertion' && (existing.authorId ?? null) === (authorId ?? null)) {
+        tr.delete(pos, pos + node.nodeSize);
+      } else {
+        tr.setNodeMarkup(pos, undefined, {
+          ...node.attrs,
+          [SUGGESTION_NODE_ATTR]: { type: 'deletion', ...shared },
+        });
+      }
+      touched = true;
+    }
+    if (!touched) return false;
     if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
     return true;
   };

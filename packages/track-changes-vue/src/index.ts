@@ -27,6 +27,7 @@ export {
   TrackedTable,
   TrackedTableRow,
   TrackedTableCell,
+  TrackedTableHeaderCell,
   type TableFeatureOptions,
   type TableFeatureLabels,
 } from './features/table';
@@ -35,5 +36,12 @@ export {
   type FormattingFeatureOptions,
   type FormattingFeatureLabels,
 } from './features/formatting';
+export {
+  createLinkFeature,
+  TrackedLink,
+  normalizeLinkHref,
+  type LinkFeatureOptions,
+  type LinkFeatureLabels,
+} from './features/link';
 
 export { VERSION } from './version';

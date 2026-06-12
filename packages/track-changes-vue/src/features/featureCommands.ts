@@ -1,6 +1,12 @@
 import type { Editor } from '@tiptap/vue-3';
 import type { Node as PMNode } from '@tiptap/pm/model';
-import { isSuggesting, suggestInsertNode, suggestDeleteNode } from '@tdg-reports/track-changes-core';
+import {
+  isSuggesting,
+  suggestInsertNode,
+  suggestInsertNodes,
+  suggestDeleteNode,
+  suggestDeleteNodes,
+} from '@tdg-reports/track-changes-core';
 
 /**
  * Shared mutation helpers for feature plugins. Track-changes awareness lives
@@ -19,6 +25,42 @@ export function featureInsertNode(editor: Editor, node: PMNode, at?: number): vo
   const tr = editor.state.tr;
   if (at !== undefined) tr.insert(at, node);
   else tr.replaceSelectionWith(node, false);
+  editor.view.dispatch(tr.scrollIntoView());
+}
+
+/**
+ * Insert several nodes at explicit positions in one operation. Suggesting mode
+ * groups them under a single suggestion id (one atomic accept/reject — e.g. a
+ * table column); editing mode applies one plain transaction. Positions refer
+ * to the current document.
+ */
+export function featureInsertNodes(editor: Editor, inserts: Array<{ node: PMNode; at: number }>): void {
+  if (!inserts.length) return;
+  if (isSuggesting(editor.state)) {
+    suggestInsertNodes(inserts)(editor.state, (tr) => editor.view.dispatch(tr));
+    return;
+  }
+  const tr = editor.state.tr;
+  for (const { node, at } of [...inserts].sort((a, b) => b.at - a.at)) tr.insert(at, node);
+  editor.view.dispatch(tr.scrollIntoView());
+}
+
+/**
+ * Delete the block nodes at `positions` in one operation. Suggesting mode
+ * marks them as a single grouped deletion suggestion; editing mode deletes
+ * them for real (descending so positions stay valid).
+ */
+export function featureDeleteNodes(editor: Editor, positions: number[]): void {
+  if (!positions.length) return;
+  if (isSuggesting(editor.state)) {
+    suggestDeleteNodes(positions)(editor.state, (tr) => editor.view.dispatch(tr));
+    return;
+  }
+  const tr = editor.state.tr;
+  for (const pos of [...positions].sort((a, b) => b - a)) {
+    const node = editor.state.doc.nodeAt(pos);
+    if (node) tr.delete(pos, pos + node.nodeSize);
+  }
   editor.view.dispatch(tr.scrollIntoView());
 }
 

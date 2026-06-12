@@ -96,6 +96,8 @@ const upload = async (file: File) => ({ src: await myBackend.upload(file) })
 | `features` | `EditorFeature[]` | `[]` | Feature plugins composing extensions + toolbar (below). |
 | `extensions` | Tiptap `Extensions` | `[]` | Extra raw extensions, for hosts that need more than the built-in features. |
 | `uploadHandler` | `EditorUploadHandler \| null` | `null` | Host upload transport: `(file: File) => Promise<{ src, alt? }>`. |
+| `maxCharacters` | `number \| null` | `null` | Soft character cap: shows a clean-projection counter footer ("123 / 2,000") with an over-limit state. Input is never hard-blocked (tracked deletions keep text in the doc) — enforce at submit time via the same projection (`countCleanText`). |
+| `showCharacterCount` | `boolean` | `false` | Show the counter footer even without a cap. |
 
 Imperative API via template ref (`TrackChangesEditorApi`): `accept(id)`,
 `reject(id)`, `acceptAll()`, `rejectAll()`, `listSuggestions()`,
@@ -116,11 +118,21 @@ Features are created per editor instance, so disabling a capability is just
   formatting is stripped. `buttons` narrows further (a bold-only field rejects
   headings wholesale). In suggesting mode, toggles are recorded as reviewable
   `format_change` suggestions.
+- `createLinkFeature({ labels?, promptUrl? })` — Set link / Remove link on the
+  selection. Dependency-free `link` mark rendering `<a href>` with an enforced
+  `rel="noopener noreferrer nofollow"`; only `http(s)`/`mailto` hrefs parse, so
+  pasted `javascript:`/`data:` links are rejected at the schema level. The
+  default URL input is `window.prompt`; pass `promptUrl(current, message)` to
+  use your own dialog. In suggesting mode, setting/removing a link is recorded
+  as a reviewable `format_change` suggestion.
 - `createImageUploadFeature({ labels?, accept?, ingestUrl?, onImagePaste? })`
   — Insert/Remove image buttons (via `uploadHandler`), plus **external-image
   localization**: see below.
-- `createTableFeature({ labels? })` — Insert table / Add row / Delete row,
-  with row-level tracked changes.
+- `createTableFeature({ labels?, rows?, cols?, withHeaderRow? })` — Insert
+  table / Add row / Delete row / Add column / Delete column. New tables get a
+  `<th>` header row by default. Row ops are tracked per row; column ops are
+  tracked as **one grouped suggestion** across all rows (shared suggestion
+  id), so accepting/rejecting a column is a single decision.
 
 All labels are overridable for i18n. Custom features implement the
 `EditorFeature` interface (`extensions()`, `toolbarItems(ctx)`,

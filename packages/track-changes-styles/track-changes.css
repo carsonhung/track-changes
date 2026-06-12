@@ -132,14 +132,37 @@ tr.tc-node-del > * {
   width: 100%;
 }
 
-.tc-table td {
+.tc-table td,
+.tc-table th {
   border: 1px solid var(--tc-table-border, rgba(0, 0, 0, 0.18));
   padding: 0.3rem 0.5rem;
   min-width: 3rem;
 }
 
+.tc-table th {
+  background: var(--tc-table-header-bg, rgba(0, 0, 0, 0.04));
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Character/word count footer (clean-projection counts; soft limit). */
+.tc-charcount {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--tc-charcount-fg, rgba(0, 0, 0, 0.45));
+}
+
+.tc-charcount--over {
+  color: var(--tc-charcount-over-fg, #b91c1c);
+  font-weight: 600;
+}
+
 @media print {
-  .tc-toolbar {
+  .tc-toolbar,
+  .tc-charcount {
     display: none;
   }
 

@@ -265,6 +265,25 @@ export function toTracked(doc: PMNode): PMNode {
   return doc;
 }
 
+/**
+ * Character/word counts of the clean (accept-all) projection — i.e. what the
+ * document will contain once suggestions are accepted, so a pending deletion
+ * stops counting immediately and a pending insertion counts right away.
+ * Characters = sum of text lengths (block breaks and atoms don't count);
+ * words = whitespace-separated runs with block boundaries as separators.
+ */
+export function countCleanText(doc: PMNode): { characters: number; words: number } {
+  const clean = toClean(doc);
+  let characters = 0;
+  clean.descendants((n) => {
+    if (n.isText && n.text) characters += n.text.length;
+    return undefined;
+  });
+  const text = clean.textBetween(0, clean.content.size, ' ');
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return { characters, words };
+}
+
 // ---------------------------------------------------------------------------
 // Query
 // ---------------------------------------------------------------------------

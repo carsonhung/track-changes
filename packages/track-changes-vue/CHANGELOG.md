@@ -1,5 +1,37 @@
 # @tdg-reports/track-changes-vue
 
+## 0.10.0
+
+- **Table columns + header row.** The table feature gains Add column /
+  Delete column toolbar items and a `tableHeader` (`<th>`) cell node; new
+  tables are inserted with a header row by default (`withHeaderRow: false`
+  to opt out). Column ops are tracked as ONE grouped suggestion across all
+  rows (core `suggestInsertNodes` / `suggestDeleteNodes`), so accepting or
+  rejecting a column is a single decision; ragged mid-edit tables clamp to
+  each row's last cell. Delete column stays disabled while any row has only
+  one cell, keeping the table schema-valid. New `featureInsertNodes` /
+  `featureDeleteNodes` helpers for custom features.
+- **Character/word count footer.** New `maxCharacters` (soft cap) and
+  `showCharacterCount` props on `<TrackChangesEditor>`: a footer shows the
+  clean-projection count (`countCleanText` — pending deletions stop counting
+  immediately, pending insertions count right away) and flags the over-limit
+  state via `.tc-charcount--over`. Input is never hard-blocked (in suggesting
+  mode tracked text physically stays in the doc); enforce at submit time via
+  the same projection. Requires `track-changes-core >= 0.7.0`.
+
+## 0.9.0
+
+- **Link feature (`createLinkFeature`).** Dependency-free `link` mark
+  (`<a href>` with enforced `rel="noopener noreferrer nofollow"`; only
+  `http(s)`/`mailto` hrefs parse — pasted `javascript:`/`data:` links are
+  rejected at the schema level). "Set link" prompts for a URL
+  (host-overridable via `promptUrl` for a proper dialog) and normalizes
+  scheme-less input to `https://`; "Remove link" unsets across the mark
+  range. In suggesting mode the core rewrite plugin converts the mark toggle
+  into a tracked `format_change` suggestion automatically, so links are
+  reviewable like any other formatting change. Schema-gated as usual: without
+  the feature the mark doesn't exist and pasted links lose their hyperlink.
+
 ## 0.8.0
 
 - **External-image localization ("cloud image" paste handling).** The

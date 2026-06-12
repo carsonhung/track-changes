@@ -1,5 +1,21 @@
 # @tdg-reports/track-changes-core
 
+## 0.7.0
+
+- **Grouped multi-node suggestions (`suggestInsertNodes` /
+  `suggestDeleteNodes`).** Insert or suggest-delete several block/structural
+  nodes in one transaction under ONE shared suggestion id, so the whole group
+  accepts/rejects atomically — built for table columns (one cell per row =
+  one reviewable change), works for any trackable node set. Per-node rules
+  match the single-node commands: the author's own un-accepted insertion is
+  real-deleted, already-deleted nodes are skipped. No engine change needed —
+  `resolve`/`listSuggestions` already treat a shared id as one unit.
+- **`countCleanText(doc)`.** Character/word counts of the accept-all
+  projection: a pending deletion stops counting immediately, a pending
+  insertion counts right away. Characters = text lengths (block breaks and
+  atoms excluded); words split on whitespace with block boundaries as
+  separators. Backs the Vue editor's character-count footer.
+
 ## 0.6.0
 
 - **P2f — tracked formatting changes (`format_change` mark, new
