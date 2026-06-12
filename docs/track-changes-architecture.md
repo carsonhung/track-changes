@@ -9,6 +9,12 @@
 > node-level tracking is demo-only until a report schema needs image/table
 > fields. Companion to `docs/track-changes-rfc.md` (the *why*); this document is
 > the *how* of what shipped.
+>
+> Per-package consumer docs (install, API surface, host integration contract,
+> backend/env reference for image ingestion): `packages/track-changes-core/README.md`,
+> `packages/track-changes-vue/README.md`, `packages/track-changes-styles/README.md`.
+> The packages themselves read **no** environment variables — env config
+> (`STORAGE_*`) lives in the host backend only.
 
 ## 1. Layering at a glance
 
