@@ -411,6 +411,21 @@ superseded by the feature toolbar. The table nodes remain demo-grade (no column
 ops / resizing); swap the node set for `prosemirror-tables` inside the same
 feature when a real schema needs it.
 
+**External-image localization** (vue 0.8.0): the image-upload feature never
+leaves a hotlinked `http(s)` image in an editable document. A doc-scan
+reconciler plugin (runs on every update + once on load; also catches
+drag-and-drop and programmatic inserts) finds external srcs and either calls
+the host's `ingestUrl: EditorUrlIngestHandler` — which copies the bytes into
+platform storage and resolves the local `src` to swap in — or strips the image
+when no handler exists / ingestion fails. `onImagePaste({ status, url })`
+(`ingested` / `rejected` / `stripped`) lets the host surface a notice.
+Read-only views are untouched so legacy content still renders; localization
+transactions are tagged (`tagSuggestionTx`) so the rewrite plugin never turns
+a failed-import removal into a tracked deletion. In the TDG app the backend
+side is `POST /api/attachments/:entityType/:entityId/ingest` — an
+SSRF-guarded server-side fetch (`lib/urlIngest.ts`) storing into the
+env-configured `STORAGE_DIR` like a direct upload.
+
 ## 11. P2f — HTML persistence + tracked formatting
 
 ### 11.1 HTML as the storage format

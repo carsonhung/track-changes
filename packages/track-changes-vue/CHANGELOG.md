@@ -1,5 +1,24 @@
 # @tdg-reports/track-changes-vue
 
+## 0.8.0
+
+- **External-image localization ("cloud image" paste handling).** The
+  image-upload feature never leaves hotlinked `http(s)` images in an editable
+  document: a doc-scan reconciler plugin (also catches drag-and-drop and
+  programmatic inserts) either localizes them through a new host hook or
+  strips them.
+  - `createImageUploadFeature({ ingestUrl })` — a host-provided
+    `EditorUrlIngestHandler` (`(url) => Promise<EditorUploadResult>`) that
+    takes a copy of the remote image (typically via a server-side fetch
+    endpoint; browser fetch dies on CORS for most hosts) and resolves with the
+    local `src` to swap in. Rejection removes the image instead.
+  - Without a handler, external images are stripped on paste.
+  - `onImagePaste` callback reports `{ status: 'ingested' | 'rejected' |
+    'stripped', url }` so hosts can show a user-facing notice.
+  - Read-only views are untouched (legacy stored content still renders);
+    localization transactions are tagged so the rewrite plugin never converts
+    a failed-import removal into a tracked deletion.
+
 ## 0.7.0
 
 - **Formatting is now opt-in at the schema level (breaking-ish default).**

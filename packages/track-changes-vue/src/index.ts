@@ -11,6 +11,7 @@ export type {
   EditorToolbarItem,
   EditorUploadHandler,
   EditorUploadResult,
+  EditorUrlIngestHandler,
 } from './features/types';
 export { featureInsertNode, featureDeleteNode, pickFile } from './features/featureCommands';
 export {
@@ -18,6 +19,8 @@ export {
   TrackedImage,
   type ImageUploadFeatureOptions,
   type ImageUploadFeatureLabels,
+  type ImagePasteEvent,
+  type ImagePasteStatus,
 } from './features/imageUpload';
 export {
   createTableFeature,

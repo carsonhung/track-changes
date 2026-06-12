@@ -31,6 +31,17 @@ export interface EditorUploadResult {
  */
 export type EditorUploadHandler = (file: File) => Promise<EditorUploadResult>;
 
+/**
+ * Host-provided URL-ingestion glue for externally-hosted images pasted into
+ * the editor (e.g. copied from a web page or cloud document). The handler
+ * takes a copy of the remote image into platform storage — typically via a
+ * server-side fetch endpoint (browser fetch dies on CORS for most hosts) —
+ * and resolves with the local `src` to embed. Reject to signal the image
+ * cannot be imported (auth-gated URL, too large, not an image); the paste
+ * localizer then removes it and notifies the host.
+ */
+export type EditorUrlIngestHandler = (url: string) => Promise<EditorUploadResult>;
+
 /** Live context passed to every toolbar item callback. */
 export interface EditorFeatureContext {
   editor: Editor;
