@@ -19,6 +19,9 @@ export type { NodeSuggestion } from './nodeAttrs';
 
 export { createSuggestionId } from './ids';
 
+export { FORMAT_CHANGE, formatChangeMarkSpec, formatChangeType, readFormatChange } from './formatChange';
+export type { FormatAction, FormatChangeAttrs } from './formatChange';
+
 export {
   trackChangesKey,
   getTrackChangesState,
@@ -39,7 +42,7 @@ export {
   listSuggestions,
   hasSuggestions,
 } from './clean';
-export type { SuggestionSummary, SuggestionRange } from './clean';
+export type { SuggestionSummary, SuggestionSummaryType, SuggestionRange } from './clean';
 
 export {
   setSuggesting,
@@ -82,6 +85,7 @@ export {
   TrackChangesRewrite,
   InsertionMark,
   DeletionMark,
+  FormatChangeMark,
   createTrackChangesExtension,
   suggestionNodeAttributes,
   trackableNode,
@@ -89,5 +93,8 @@ export {
 export type { TrackChangesExtensionOptions } from './tiptap';
 
 export { withSuggestionMarks, createBasicSuggestionSchema, createExtendedSuggestionSchema } from './schema';
+
+export { docToHtml, htmlToDoc, htmlHasSuggestions } from './html';
+export type { HtmlCodecOptions } from './html';
 
 export { VERSION } from './version';

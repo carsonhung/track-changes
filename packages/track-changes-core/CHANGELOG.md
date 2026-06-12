@@ -1,5 +1,45 @@
 # @tdg-reports/track-changes-core
 
+## 0.6.0
+
+- **P2f — tracked formatting changes (`format_change` mark, new
+  `formatChange.ts`).** Toggling formatting on existing text in suggesting
+  mode is now a reviewable suggestion: the formatting is applied (or removed)
+  for real, and a `format_change` mark carrying
+  `{ id, authorId, ts, action: 'add' | 'remove', markName }` records the
+  toggle (`excludes: ''` so several toggles stack on the same text). Driven by
+  the rewrite plugin intercepting plain `AddMarkStep` / `RemoveMarkStep`
+  transactions — the exact steps Tiptap's `toggleBold` (toolbar or Ctrl+B)
+  dispatches — so there is one tracked path for keyboard and toolbar alike:
+  - only segments whose mark presence actually changed are recorded, so
+    reject restores exactly the prior formatting (partial-overlap safe)
+  - toggling the same mark back while pending **cancels** the suggestion
+    instead of stacking a contradictory pair
+  - formatting inside a pending insertion is not separately tracked (the
+    insertion already carries its final formatting)
+  - accept keeps the toggle (strips the mark); reject inverts it;
+    `toClean` / `toRejected` / `listSuggestions` (new `type: 'format'` with
+    `formatAction` / `formatMark`) / `hasSuggestions` all understand it
+  - serializes to `<span data-suggestion-format="add:bold">` — lossless in
+    the HTML codec. Raw-schema spec + Tiptap `FormatChangeMark` both shipped;
+    block-type changes (headings, lists) remain pass-through by design
+
+- **HTML codec (`html.ts`).** New `docToHtml(doc)` / `htmlToDoc(html, schema)`
+  helpers so a tracked document can be persisted as a plain **HTML string**
+  (e.g. a text column in a DB) instead of ProseMirror JSON. Lossless by design:
+  suggestions are already real `<ins>`/`<del>` tags and `data-suggestion-*`
+  attributes, so the round-trip preserves ids, authors, timestamps, and the
+  accept/reject semantics (covered by golden-file round-trip tests). Both
+  helpers take an optional `options.document` for non-browser environments;
+  `htmlHasSuggestions(html)` is a cheap substring sniff for "pending changes"
+  badges without parsing.
+- **Fix: headless extended schema now serializes node-attribute suggestions.**
+  `createExtendedSuggestionSchema()`'s `figure` / `tableRow` / `tableCell`
+  specs previously dropped the `suggestion` attribute in `toDOM`/`parseDOM`
+  (only the Tiptap extension path rendered it); they now emit and parse
+  `data-suggestion` / `data-suggestion-type` / `data-author` / `data-ts`, so
+  HTML round-trips are lossless for block/structural suggestions too.
+
 ## 0.5.0
 
 - **P2d — transaction-rewrite feature plugin (`createRewriteSuggestingPlugin`,

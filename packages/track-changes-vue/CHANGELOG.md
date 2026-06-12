@@ -1,5 +1,26 @@
 # @tdg-reports/track-changes-vue
 
+## 0.6.0
+
+- **P2f — formatting feature (`createFormattingFeature`).** Toolbar buttons
+  for bold / italic / strikethrough / heading 2-3 / bullet & numbered lists
+  (all StarterKit, so the feature contributes no extensions). Buttons dispatch
+  plain Tiptap toggle commands; in suggesting mode the core rewrite plugin
+  converts the mark toggles into `format_change` suggestions, so toolbar and
+  keyboard (Ctrl+B/I) formatting are tracked identically. `buttons` option
+  picks/orders the set; `labels` for i18n.
+
+- **HTML persistence format.** New `format: 'json' | 'html'` prop on
+  `<TrackChangesEditor>` (default `'json'`, fully backward compatible). With
+  `format="html"`, `update:modelValue` emits the document as an **HTML
+  string** — suggestions stay lossless as real `<ins>`/`<del>` tags and
+  `data-suggestion-*` attributes — so hosts can store rich text as plain text
+  in a DB. The input side is format-agnostic: `modelValue` now accepts a PM
+  JSON object **or** an HTML string regardless of `format`.
+- New imperative API: `getHTML()` (current tracked doc as HTML) and
+  `getCleanHtml()` (accept-all projection as HTML, via the core's new
+  `docToHtml`).
+
 ## 0.5.0
 
 - **P2e — CKEditor-style editor feature plugins.** New `features/` layer: an

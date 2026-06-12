@@ -1,6 +1,8 @@
 # Track Changes — Architecture
 
-> **Status:** P1 + P2a + P2b + P2c + P2d + P2e implemented (core 0.5.0 / vue 0.5.0). Headless core
+> **Status:** P1 + P2a + P2b + P2c + P2d + P2e + P2f implemented (core 0.6.0 / vue 0.6.0).
+> Richtext fields persist as **HTML strings** (lossless: suggestions are real
+> `<ins>`/`<del>`/`data-suggestion-*` markup), so values store as text in the DB. Headless core
 > (inline text **and** node-level: atom images + structural table rows) + Vue
 > adapter + print/screen CSS + a demo sandbox at `/admin/track-changes-demo`.
 > Live report **revise-and-resubmit** uses inline-text track changes (§6.1);
@@ -308,6 +310,7 @@ so no separate baseline column is required.
 | **P2c** | modular plugin architecture (CKEditor-style, §2.2) + tracked clipboard (paste/cut) + deletion re-mark guard & merging | **done (core 0.4.0)** |
 | **P2d** | `appendTransaction` rewrite plugin — IME composition, drag-and-drop, programmatic edits + the `SUGGESTION_TX_META` tagging contract (§2.2); structural edits remain pass-through by design of the mark model | **done (core 0.5.0 / vue 0.4.1)** |
 | **P2e** | editor feature plugins (CKEditor-style, §10) — `EditorFeature` contract, built-in toolbar, image-upload + table features, host upload glue | **done (vue 0.5.0 / styles 0.4.0)** |
+| **P2f** | HTML persistence format (`docToHtml`/`htmlToDoc`, `format="html"` prop — values store as plain text in the DB) + formatting feature (bold/italic/strike/headings/lists toolbar) + tracked format toggles (`format_change` mark, §11) | **done (core 0.6.0 / vue 0.6.0 / styles 0.5.0)** |
 | P3 | React adapter from the same core | future |
 | P4 | collaboration (CRDT/OT) over the same mark model | future |
 
@@ -407,6 +410,56 @@ changes" button card and local node-extension module — the P2b §9.2 toolbar i
 superseded by the feature toolbar. The table nodes remain demo-grade (no column
 ops / resizing); swap the node set for `prosemirror-tables` inside the same
 feature when a real schema needs it.
+
+## 11. P2f — HTML persistence + tracked formatting
+
+### 11.1 HTML as the storage format
+
+The keystone rule (suggestions are document data rendered to real HTML) makes
+an HTML string a **lossless persistence format**: `<ins data-suggestion
+data-author data-ts>` / `<del …>` for inline suggestions,
+`data-suggestion(-type)` attributes for block/structural ones, and
+`data-suggestion-format` spans for formatting toggles all round-trip through
+the schema's parse rules.
+
+- Core: `docToHtml(doc)` / `htmlToDoc(html, schema)` (DOM-injectable for
+  headless callers) + `htmlHasSuggestions(html)` (cheap substring sniff for
+  "pending changes" badges).
+- Vue: `format: 'json' | 'html'` prop on `<TrackChangesEditor>` — with
+  `html`, `update:modelValue` emits HTML strings; `modelValue` accepts either
+  format regardless. `getHTML()` / `getCleanHtml()` round out the API.
+- App: `RichtextField.vue` pins `format="html"`, so report `formData` stores
+  richtext values as plain text (DB-portable, greppable, printable without the
+  editor). Legacy plain-text and PM-JSON values are coerced on render;
+  `ReportDetailPage`'s pending-revision badge counts `data-suggestion="id"`
+  occurrences instead of walking JSON.
+
+### 11.2 Tracked formatting (`format_change` mark)
+
+Toggling formatting on existing text changes no content, so it gets a third
+encoding: the formatting applies (or unapplies) **for real**, and a
+`format_change` mark carrying `{ id, authorId, ts, action: 'add' | 'remove',
+markName }` records the toggle (`excludes: ''` lets several toggles stack).
+Accept strips the record (formatting stays as toggled); reject inverts the
+toggle. `listSuggestions` reports them as `type: 'format'` with
+`formatAction`/`formatMark`.
+
+There is **one tracked path**: the rewrite plugin (§P2d) intercepts plain
+`AddMarkStep`/`RemoveMarkStep` transactions — exactly what Tiptap's
+`toggleBold` dispatches — so toolbar buttons and Ctrl+B/I are tracked
+identically, with three refinements:
+
+- only segments whose mark presence actually changed are recorded (computed
+  against the pre-step doc), so reject restores exactly the prior formatting;
+- toggling the same mark back while pending **cancels** the suggestion rather
+  than stacking a contradictory pair;
+- formatting inside a pending insertion is not separately tracked — the
+  insertion already carries its final formatting.
+
+`createFormattingFeature()` (vue) contributes the toolbar: bold / italic /
+strikethrough (tracked marks) and heading 2–3 / bullet / numbered lists
+(block-type changes — structural, pass-through untracked by design of the mark
+model). Enabled per field via `richtextFeatures: ['formatting', …]`.
 
 ## 8. Testing
 

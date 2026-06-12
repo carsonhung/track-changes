@@ -6,6 +6,7 @@ import {
 } from './plugin';
 import { createRewriteSuggestingPlugin } from './rewrite';
 import { createTrackChangesStatePlugin } from './state';
+import { FORMAT_CHANGE, type FormatChangeAttrs } from './formatChange';
 import {
   SUGGESTION_NODE_ATTR,
   suggestionFromDom,
@@ -107,6 +108,67 @@ export const DeletionMark = Mark.create({
   },
 });
 
+/**
+ * Tiptap mark mirroring `formatChangeMarkSpec` (see `formatChange.ts`): a
+ * tracked formatting toggle on existing text. `excludes: ''` lets several
+ * toggles (bold added, italic removed) stack on the same range.
+ */
+export const FormatChangeMark = Mark.create({
+  name: FORMAT_CHANGE,
+  inclusive: () => false,
+  excludes: '',
+  addAttributes() {
+    return {
+      id: {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-suggestion'),
+        renderHTML: (attrs) => (attrs.id ? { 'data-suggestion': attrs.id } : {}),
+      },
+      authorId: {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-author') || null,
+        renderHTML: (attrs) => (attrs.authorId ? { 'data-author': attrs.authorId } : {}),
+      },
+      ts: {
+        default: null,
+        parseHTML: (el) => Number(el.getAttribute('data-ts')) || null,
+        renderHTML: (attrs) => (attrs.ts ? { 'data-ts': String(attrs.ts) } : {}),
+      },
+      action: {
+        default: 'add',
+        parseHTML: (el) => el.getAttribute('data-suggestion-format')?.split(':')[0] ?? null,
+        renderHTML: () => ({}),
+      },
+      markName: {
+        default: null,
+        parseHTML: (el) => {
+          const v = el.getAttribute('data-suggestion-format');
+          const idx = v?.indexOf(':') ?? -1;
+          return idx > 0 ? v!.slice(idx + 1) : null;
+        },
+        renderHTML: () => ({}),
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'span[data-suggestion-format]' }];
+  },
+  renderHTML({ mark, HTMLAttributes }) {
+    const a = mark.attrs as FormatChangeAttrs;
+    return [
+      'span',
+      mergeAttributes(
+        {
+          'data-suggestion-format': `${a.action}:${a.markName}`,
+          class: a.action === 'add' ? 'tc-fmt tc-fmt-add' : 'tc-fmt tc-fmt-del',
+        },
+        HTMLAttributes,
+      ),
+      0,
+    ];
+  },
+});
+
 export interface TrackChangesExtensionOptions {
   suggesting: boolean;
   authorId: string | null;
@@ -129,7 +191,7 @@ export const TrackChangesCore = Extension.create<TrackChangesExtensionOptions>({
     return { suggesting: false, authorId: null };
   },
   addExtensions() {
-    return [InsertionMark, DeletionMark];
+    return [InsertionMark, DeletionMark, FormatChangeMark];
   },
   addProseMirrorPlugins() {
     return [

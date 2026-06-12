@@ -62,6 +62,16 @@ tr.tc-node-del > * {
   text-decoration-color: var(--tc-del-color, #b91c1c);
 }
 
+/*
+ * Tracked formatting changes (P2f) — the formatting itself is applied (or
+ * removed) for real; the span only highlights that a pending toggle covers
+ * this text. Amber: distinct from insert-green / delete-red.
+ */
+.tc-fmt {
+  background: var(--tc-fmt-bg, rgba(245, 158, 11, 0.16));
+  box-shadow: 0 1px 0 0 var(--tc-fmt-color, #b45309);
+}
+
 /* Editor surface niceties (optional; host may override). */
 .tc-editor .ProseMirror {
   outline: none;
@@ -164,5 +174,10 @@ tr.tc-node-del > * {
   .tc-node-del {
     background: transparent;
     box-shadow: inset 3px 0 0 0 #000;
+  }
+
+  .tc-fmt {
+    background: transparent;
+    box-shadow: 0 1px 0 0 #000;
   }
 }

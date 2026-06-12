@@ -1,5 +1,5 @@
 export { default as TrackChangesEditor } from './TrackChangesEditor';
-export type { EditorMode, TrackChangesEditorApi } from './TrackChangesEditor';
+export type { EditorMode, EditorFormat, TrackChangesEditorApi } from './TrackChangesEditor';
 export type { SuggestionSummary } from '@tdg-reports/track-changes-core';
 
 export { useTrackChangesReview } from './useTrackChangesReview';
@@ -27,5 +27,10 @@ export {
   type TableFeatureOptions,
   type TableFeatureLabels,
 } from './features/table';
+export {
+  createFormattingFeature,
+  type FormattingFeatureOptions,
+  type FormattingFeatureLabels,
+} from './features/formatting';
 
 export { VERSION } from './version';

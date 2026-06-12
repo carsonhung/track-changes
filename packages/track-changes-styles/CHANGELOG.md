@@ -1,5 +1,12 @@
 # @tdg-reports/track-changes-styles
 
+## 0.5.0
+
+- P2f: tracked-formatting highlight. New `.tc-fmt` (amber background +
+  underline shadow, themable via `--tc-fmt-bg` / `--tc-fmt-color`) marking
+  text covered by a pending `format_change` suggestion; monochrome underline
+  in print.
+
 ## 0.4.0
 
 - P2e: feature toolbar + feature node styles. New `.tc-toolbar` /

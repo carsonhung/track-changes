@@ -2,8 +2,12 @@ import type { Mark, Node as PMNode } from '@tiptap/pm/model';
 import { Transform } from '@tiptap/pm/transform';
 import { INSERTION, DELETION, insertionType, deletionType, type SuggestionType } from './marks';
 import { SUGGESTION_NODE_ATTR, readNodeSuggestion } from './nodeAttrs';
+import { FORMAT_CHANGE, readFormatChange, type FormatAction } from './formatChange';
 
 export type { SuggestionType };
+
+/** Summary `type`: content suggestions plus tracked formatting changes (P2f). */
+export type SuggestionSummaryType = SuggestionType | 'format';
 
 export interface SuggestionRange {
   from: number;
@@ -13,7 +17,7 @@ export interface SuggestionRange {
 
 export interface SuggestionSummary {
   id: string;
-  type: SuggestionType;
+  type: SuggestionSummaryType;
   /** How the suggestion is encoded: an inline `mark` (text/atom) or a `node` attribute. */
   kind: 'mark' | 'node';
   authorId: string | null;
@@ -22,6 +26,10 @@ export interface SuggestionSummary {
   text: string;
   /** Node type name for `node`/atom suggestions (e.g. `image`, `tableRow`); undefined for text. */
   nodeType?: string;
+  /** For `type: 'format'` — whether the formatting was applied or removed. */
+  formatAction?: FormatAction;
+  /** For `type: 'format'` — the toggled formatting mark (e.g. `bold`). */
+  formatMark?: string;
   from: number;
   to: number;
 }
@@ -53,6 +61,21 @@ interface NodeUnit {
   nodeSize: number;
   attrs: Record<string, unknown>;
   nodeType: string;
+}
+
+/** A tracked formatting change segment (the `format_change` mark, P2f). */
+interface FormatUnit {
+  kind: 'format';
+  id: string;
+  authorId: string | null;
+  ts: number | null;
+  action: FormatAction;
+  markName: string;
+  /** Exact mark instance, so stripping one stacked toggle leaves the others. */
+  mark: Mark;
+  from: number;
+  to: number;
+  text: string;
 }
 
 type Unit = MarkUnit | NodeUnit;
@@ -101,6 +124,53 @@ function collectUnits(doc: PMNode): Unit[] {
   return out;
 }
 
+/** Collect every tracked-formatting segment in document order. */
+function collectFormatUnits(doc: PMNode): FormatUnit[] {
+  const out: FormatUnit[] = [];
+  doc.descendants((node, pos) => {
+    for (const mark of node.marks) {
+      const f = readFormatChange(mark);
+      if (!f) continue;
+      out.push({
+        kind: 'format',
+        id: f.id,
+        authorId: f.authorId,
+        ts: f.ts,
+        action: f.action,
+        markName: f.markName,
+        mark,
+        from: pos,
+        to: pos + node.nodeSize,
+        text: node.text ?? '',
+      });
+    }
+    return undefined;
+  });
+  return out;
+}
+
+/**
+ * Resolve tracked formatting changes. Accept keeps the formatting as toggled;
+ * reject inverts the toggle (add → remove the mark again, remove → re-apply).
+ * Both end by stripping the `format_change` mark. All ops are size-stable, so
+ * one fresh scan is valid for the whole pass.
+ */
+function resolveFormatUnits(tr: Transform, accept: boolean, id?: string): void {
+  const schema = tr.doc.type.schema;
+  collectFormatUnits(tr.doc)
+    .filter((u) => id === undefined || u.id === id)
+    .forEach((u) => {
+      if (!accept) {
+        const target = schema.marks[u.markName];
+        if (target) {
+          if (u.action === 'add') tr.removeMark(u.from, u.to, target);
+          else tr.addMark(u.from, u.to, target.create());
+        }
+      }
+      tr.removeMark(u.from, u.to, u.mark);
+    });
+}
+
 /**
  * Delete the given units. Positions are remapped through the transaction as we
  * go, so deleting an ancestor node first collapses its descendants' ranges to
@@ -147,6 +217,9 @@ function resolve(tr: Transform, accept: boolean, id?: string): void {
   const match = (u: Unit) => (id === undefined || u.id === id);
   deleteUnits(tr, collectUnits(tr.doc).filter((u) => u.type === remove && match(u)));
   stripUnits(tr, (u) => u.type === keep && match(u));
+  // Formatting suggestions last: content deletes have settled, and format
+  // resolution is size-stable so its own fresh scan stays valid throughout.
+  resolveFormatUnits(tr, accept, id);
 }
 
 /** Accept every suggestion: keep inserted content, drop deleted content. */
@@ -218,6 +291,26 @@ export function listSuggestions(doc: PMNode): SuggestionSummary[] {
       to: unitTo(u),
     });
   }
+  for (const u of collectFormatUnits(doc)) {
+    const existing = byId.get(u.id);
+    if (existing) {
+      existing.to = u.to;
+      existing.text += u.text;
+      continue;
+    }
+    byId.set(u.id, {
+      id: u.id,
+      type: 'format',
+      kind: 'mark',
+      authorId: u.authorId,
+      ts: u.ts,
+      text: u.text,
+      formatAction: u.action,
+      formatMark: u.markName,
+      from: u.from,
+      to: u.to,
+    });
+  }
   return [...byId.values()].sort((a, b) => a.from - b.from);
 }
 
@@ -227,7 +320,9 @@ export function hasSuggestions(doc: PMNode): boolean {
   doc.descendants((node) => {
     if (found) return false;
     if (
-      node.marks.some((m) => m.type.name === INSERTION || m.type.name === DELETION) ||
+      node.marks.some(
+        (m) => m.type.name === INSERTION || m.type.name === DELETION || m.type.name === FORMAT_CHANGE,
+      ) ||
       readNodeSuggestion(node)
     ) {
       found = true;

@@ -27,10 +27,22 @@ import {
   listSuggestions,
   toClean,
   tagSuggestionTx,
+  docToHtml,
   type SuggestionSummary,
 } from '@tdg-reports/track-changes-core';
 
 export type EditorMode = 'editing' | 'suggesting' | 'viewing';
+
+/**
+ * Persistence format for `modelValue` / `update:modelValue`.
+ *
+ * - `json` — ProseMirror JSON document (object). Default, backward compatible.
+ * - `html` — HTML string. Lossless: suggestions are real `<ins>`/`<del>` tags
+ *   and `data-suggestion-*` attributes that round-trip through the schema's
+ *   parse rules, so the value can be stored as plain text in a DB and renders
+ *   correctly (including print/PDF) without the editor.
+ */
+export type EditorFormat = 'json' | 'html';
 
 type Json = Record<string, unknown>;
 
@@ -51,6 +63,10 @@ export interface TrackChangesEditorApi extends TrackChangesEditorLike {
   deleteNode: (pos: number) => void;
   listSuggestions: () => SuggestionSummary[];
   getClean: () => Json | null;
+  /** Current (tracked) document as an HTML string. */
+  getHTML: () => string | null;
+  /** Accept-all projection of the document as an HTML string. */
+  getCleanHtml: () => string | null;
 }
 
 const EMPTY_DOC: Json = { type: 'doc', content: [{ type: 'paragraph' }] };
@@ -65,7 +81,13 @@ const EMPTY_DOC: Json = { type: 'doc', content: [{ type: 'paragraph' }] };
 export default defineComponent({
   name: 'TrackChangesEditor',
   props: {
-    modelValue: { type: Object as PropType<Json | null>, default: null },
+    /** PM JSON doc (`format: 'json'`) or HTML string (`format: 'html'`). */
+    modelValue: {
+      type: [Object, String] as PropType<Json | string | null>,
+      default: null,
+    },
+    /** Format emitted via `update:modelValue` (input accepts either, always). */
+    format: { type: String as PropType<EditorFormat>, default: 'json' },
     authorId: { type: String as PropType<string | null>, default: null },
     mode: { type: String as PropType<EditorMode>, default: 'suggesting' },
     readonly: { type: Boolean, default: false },
@@ -92,7 +114,7 @@ export default defineComponent({
     },
   },
   emits: {
-    'update:modelValue': (_value: Json) => true,
+    'update:modelValue': (_value: Json | string) => true,
     ready: (_editor: Editor) => true,
   },
   setup(props, { emit, expose }) {
@@ -104,7 +126,9 @@ export default defineComponent({
 
     onMounted(() => {
       const instance = new Editor({
-        content: props.modelValue ?? EMPTY_DOC,
+        // Tiptap accepts both PM JSON and an HTML string as initial content,
+        // so the input side is format-agnostic regardless of the `format` prop.
+        content: props.modelValue || EMPTY_DOC,
         editable: isEditable(props.mode, props.readonly),
         extensions: [
           StarterKit,
@@ -115,7 +139,8 @@ export default defineComponent({
           ...props.features.flatMap((f) => f.extensions?.() ?? []),
           ...props.extraExtensions,
         ],
-        onUpdate: ({ editor: ed }) => emit('update:modelValue', ed.getJSON() as Json),
+        onUpdate: ({ editor: ed }) =>
+          emit('update:modelValue', props.format === 'html' ? ed.getHTML() : (ed.getJSON() as Json)),
       });
       instance.on('transaction', () => {
         editorTick.value += 1;
@@ -180,6 +205,9 @@ export default defineComponent({
         editor.value ? listSuggestions(editor.value.state.doc) : [],
       getClean: (): Json | null =>
         editor.value ? (toClean(editor.value.state.doc).toJSON() as Json) : null,
+      getHTML: (): string | null => editor.value?.getHTML() ?? null,
+      getCleanHtml: (): string | null =>
+        editor.value ? docToHtml(toClean(editor.value.state.doc)) : null,
     };
     expose(api);
 

@@ -1,6 +1,6 @@
 {
   "name": "@tdg-reports/track-changes-vue",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Vue 3 adapter for @tdg-reports/track-changes-core: a thin <TrackChangesEditor> built on @tiptap/vue-3.",
   "license": "MIT",
   "type": "module",
