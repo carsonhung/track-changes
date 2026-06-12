@@ -1,5 +1,12 @@
 # @tdg-reports/track-changes-vue
 
+## 0.4.1
+
+- Accept/reject transactions dispatched by `<TrackChangesEditor>` and
+  `useTrackChangesReview` are now tagged with the core's `tagSuggestionTx`, so
+  the new rewrite plugin (core 0.5.0) never re-encodes a resolution as a fresh
+  suggestion. Requires `@tdg-reports/track-changes-core` ≥ 0.5.0.
+
 ## 0.4.0
 
 - **P2b node-level support.** `<TrackChangesEditor>` gains an `extraExtensions`

@@ -1,6 +1,6 @@
 # Track Changes — Architecture
 
-> **Status:** P1 + P2a + P2b implemented (core 0.3.0 / vue 0.4.0). Headless core
+> **Status:** P1 + P2a + P2b + P2c + P2d implemented (core 0.5.0 / vue 0.4.1). Headless core
 > (inline text **and** node-level: atom images + structural table rows) + Vue
 > adapter + print/screen CSS + a demo sandbox at `/admin/track-changes-demo`.
 > Live report **revise-and-resubmit** uses inline-text track changes (§6.1);
@@ -71,13 +71,16 @@ src/
   plugin.ts     feature plugins: createTextSuggestingPlugin() (typing, Backspace/
                 Delete), createClipboardSuggestingPlugin() (paste, cut), and the
                 createSuggestingPlugins() composite
+  rewrite.ts    transaction-rewrite feature plugin (appendTransaction safety net:
+                IME, drag-and-drop, programmatic edits) + the SUGGESTION_TX_META
+                tagging contract (tagSuggestionTx / isRewriteExempt)
   commands.ts   ProseMirror commands (setSuggesting, suggestInsertText,
                 suggestInsertNode, acceptSuggestion, …) — used by the Tiptap layer
   clean.ts      pure Transform ops (acceptOn/rejectOn/…) + projections
                 (toClean/toRejected/toTracked) + queries (listSuggestions)
   schema.ts     withSuggestionMarks() helper for standalone PM schemas (tests)
   tiptap.ts     InsertionMark, DeletionMark; modular extensions (TrackChangesCore /
-                Text / Clipboard) + TrackChanges glue + trackableNode() helper
+                Text / Clipboard / Rewrite) + TrackChanges glue + trackableNode() helper
   index.ts      public barrel
 ```
 
@@ -94,6 +97,7 @@ core changes.
 | state core (required) | `createTrackChangesStatePlugin()` | `TrackChangesCore` |
 | typing + Backspace/Delete | `createTextSuggestingPlugin()` | `TrackChangesText` |
 | paste + cut | `createClipboardSuggestingPlugin()` | `TrackChangesClipboard` |
+| everything else (safety net) | `createRewriteSuggestingPlugin()` | `TrackChangesRewrite` |
 | everything (glue) | `createSuggestingPlugins()` | `TrackChanges` |
 | component integration | `suggestionNodeAttrSpec()` in the NodeSpec | `trackableNode(NodeExtension)` |
 
@@ -105,13 +109,21 @@ Input coverage in suggesting mode:
 | Backspace / Delete | text plugin (`handleKeyDown`) | deletion mark (text kept); own un-accepted insertions removed for real; already-deleted segments skipped; consecutive presses merge into one suggestion |
 | paste | clipboard plugin (`handlePaste`) | insertion mark over the slice's text (rich pastes flatten to text; text-less slices blocked, never applied untracked) |
 | cut | clipboard plugin (`handleDOMEvents.cut`) | clipboard written manually; selection becomes a tracked deletion |
-| **IME composition** | **not yet** — bypasses editor props | applied untracked (known limitation) |
-| **structural edits** (Enter split, etc.) | **not yet** | applied untracked (known limitation) |
+| IME composition | rewrite plugin (`appendTransaction`) | inserted text insertion-marked; the author's own replaced composition text is dropped for real, so each composition resolves to one clean insertion |
+| drag-and-drop move | rewrite plugin | tracked deletion at the source + tracked insertion at the drop point |
+| programmatic / other untagged inline edits | rewrite plugin | inserted inline content insertion-marked; deleted inline content restored deletion-marked |
+| **structural edits** (Enter split, ReplaceAroundStep wraps) | **pass through untracked** | the mark model cannot encode a split/wrap as document data (CKEditor uses block attributes here); documented limitation |
+| **formatting changes** (bold toggle, etc.) | **pass through untracked** | format suggestions are out of scope for now |
+| **multi-block deletions** via untagged transactions | **pass through untracked** | restoring structural slices safely needs block-level encoding; inline-only slices are restored |
 
-The two gaps share one proper fix — an `appendTransaction` feature plugin that
-rewrites any untagged doc-changing transaction into suggestion form — planned as
-the next core increment, slotting into this composition without touching the
-existing plugins.
+The rewrite plugin (P2d, `rewrite.ts`) is the safety net under the prop-based
+plugins: in suggesting mode it rewrites any **untagged** doc-changing
+transaction into suggestion form. The tagging contract: every transaction
+produced by this package's commands (and the Vue adapter's accept/reject) is
+tagged with `SUGGESTION_TX_META` via `tagSuggestionTx(tr)`; undo/redo
+(`history$`) and `addToHistory: false` (external sync) transactions are exempt
+(`isRewriteExempt`). Hosts dispatching their own resolution transactions must
+tag them the same way.
 
 ## 3. The keystone rule — suggestions are document data, not plugin state
 
@@ -284,7 +296,7 @@ so no separate baseline column is required.
 | **P2a** | headless `useTrackChangesReview` + reusable `SuggestionReviewPanel`; **live report revise-and-resubmit wiring** (tester A4) | **done (v0.36.4 / 0.37.0)** |
 | **P2b** | atom nodes (images) + block/structural nodes (table rows) — see §9 | **done (core 0.3.0 / vue 0.4.0)** |
 | **P2c** | modular plugin architecture (CKEditor-style, §2.2) + tracked clipboard (paste/cut) + deletion re-mark guard & merging | **done (core 0.4.0)** |
-| P2d | `appendTransaction` interception plugin — IME composition + structural edits (Enter splits) | next |
+| **P2d** | `appendTransaction` rewrite plugin — IME composition, drag-and-drop, programmatic edits + the `SUGGESTION_TX_META` tagging contract (§2.2); structural edits remain pass-through by design of the mark model | **done (core 0.5.0 / vue 0.4.1)** |
 | P3 | React adapter from the same core | future |
 | P4 | collaboration (CRDT/OT) over the same mark model | future |
 

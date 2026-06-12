@@ -8,6 +8,7 @@ import {
   rejectAllOn,
   toClean,
   listSuggestions,
+  tagSuggestionTx,
   type SuggestionSummary,
 } from '@tdg-reports/track-changes-core';
 
@@ -85,7 +86,8 @@ export function useTrackChangesReview(
     if (!bound) return;
     const tr = bound.state.tr;
     mutate(tr);
-    if (tr.docChanged || tr.steps.length) bound.view.dispatch(tr);
+    // Resolution transactions must not be re-encoded by the rewrite plugin.
+    if (tr.docChanged || tr.steps.length) bound.view.dispatch(tagSuggestionTx(tr));
   }
 
   return {

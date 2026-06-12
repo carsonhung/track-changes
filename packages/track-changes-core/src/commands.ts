@@ -5,6 +5,7 @@ import { SUGGESTION_NODE_ATTR, isTrackableNode, readNodeSuggestion } from './nod
 import { createSuggestionId } from './ids';
 import { trackChangesKey, getTrackChangesState } from './state';
 import { acceptOn, rejectOn, acceptAllOn, rejectAllOn } from './clean';
+import { tagSuggestionTx } from './rewrite';
 
 type Dispatch = ((tr: Transaction) => void) | undefined;
 
@@ -137,7 +138,7 @@ function insertSuggestion(
   tr.insert(to, state.schema.text(text, [insType.create(attrs)]));
   const caret = to + text.length;
   tr.setSelection(TextSelection.create(tr.doc, caret));
-  if (dispatch) dispatch(tr.scrollIntoView());
+  if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
   return true;
 }
 
@@ -169,13 +170,13 @@ export const suggestDeleteBackward: Command = (state, dispatch) => {
   if (!empty) {
     markRangeDeleted(tr, from, to, insType, delType, authorId);
     tr.setSelection(TextSelection.create(tr.doc, from));
-    if (dispatch) dispatch(tr.scrollIntoView());
+    if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
     return true;
   }
   if (from === 0) return false;
   markRangeDeleted(tr, from - 1, from, insType, delType, authorId);
   tr.setSelection(TextSelection.create(tr.doc, Math.max(0, from - 1)));
-  if (dispatch) dispatch(tr.scrollIntoView());
+  if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
   return true;
 };
 
@@ -190,13 +191,13 @@ export const suggestDeleteForward: Command = (state, dispatch) => {
   if (!empty) {
     markRangeDeleted(tr, from, to, insType, delType, authorId);
     tr.setSelection(TextSelection.create(tr.doc, from));
-    if (dispatch) dispatch(tr.scrollIntoView());
+    if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
     return true;
   }
   if (from >= state.doc.content.size) return false;
   markRangeDeleted(tr, from, from + 1, insType, delType, authorId);
   tr.setSelection(TextSelection.create(tr.doc, from));
-  if (dispatch) dispatch(tr.scrollIntoView());
+  if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
   return true;
 };
 
@@ -247,7 +248,7 @@ export function suggestInsertNode(node: PMNode, at?: number): Command {
     const tracked = trackInserted(state.schema, node, authorId);
     tr.insert(pos, tracked);
     tr.setSelection(Selection.near(tr.doc.resolve(pos + tracked.nodeSize)));
-    if (dispatch) dispatch(tr.scrollIntoView());
+    if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
     return true;
   };
 }
@@ -269,7 +270,7 @@ export function suggestDeleteNode(pos: number): Command {
 
     if (node.isInline) {
       markRangeDeleted(tr, pos, pos + node.nodeSize, insType, delType, authorId);
-      if (dispatch) dispatch(tr.scrollIntoView());
+      if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
       return true;
     }
 
@@ -284,7 +285,7 @@ export function suggestDeleteNode(pos: number): Command {
         [SUGGESTION_NODE_ATTR]: { type: 'deletion', id: createSuggestionId(), authorId, ts: Date.now() },
       });
     }
-    if (dispatch) dispatch(tr.scrollIntoView());
+    if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
     return true;
   };
 }
@@ -297,7 +298,7 @@ export function acceptSuggestion(id: string): Command {
   return (state, dispatch) => {
     const tr = state.tr;
     acceptOn(tr, id);
-    if (dispatch) dispatch(tr);
+    if (dispatch) dispatch(tagSuggestionTx(tr));
     return true;
   };
 }
@@ -306,7 +307,7 @@ export function rejectSuggestion(id: string): Command {
   return (state, dispatch) => {
     const tr = state.tr;
     rejectOn(tr, id);
-    if (dispatch) dispatch(tr);
+    if (dispatch) dispatch(tagSuggestionTx(tr));
     return true;
   };
 }
@@ -315,7 +316,7 @@ export function acceptAllSuggestions(): Command {
   return (state, dispatch) => {
     const tr = state.tr;
     acceptAllOn(tr);
-    if (dispatch) dispatch(tr);
+    if (dispatch) dispatch(tagSuggestionTx(tr));
     return true;
   };
 }
@@ -324,7 +325,7 @@ export function rejectAllSuggestions(): Command {
   return (state, dispatch) => {
     const tr = state.tr;
     rejectAllOn(tr);
-    if (dispatch) dispatch(tr);
+    if (dispatch) dispatch(tagSuggestionTx(tr));
     return true;
   };
 }

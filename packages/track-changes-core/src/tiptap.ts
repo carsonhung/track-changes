@@ -4,6 +4,7 @@ import {
   createClipboardSuggestingPlugin,
   type SuggestingOptions,
 } from './plugin';
+import { createRewriteSuggestingPlugin } from './rewrite';
 import { createTrackChangesStatePlugin } from './state';
 import {
   SUGGESTION_NODE_ATTR,
@@ -157,7 +158,19 @@ export const TrackChangesClipboard = Extension.create({
 });
 
 /**
- * Glue extension bundling the full set (core + text + clipboard). Mode/author
+ * Feature extension: safety net for input the prop-based features can't see
+ * (IME composition, drag-and-drop moves, programmatic edits) — untagged
+ * doc-changing transactions are rewritten into suggestion form.
+ */
+export const TrackChangesRewrite = Extension.create({
+  name: 'trackChangesRewrite',
+  addProseMirrorPlugins() {
+    return [createRewriteSuggestingPlugin()];
+  },
+});
+
+/**
+ * Glue extension bundling the full set (core + text + clipboard + rewrite). Mode/author
  * are applied imperatively via the `setSuggesting` / `setSuggestionAuthor`
  * commands (see `commands.ts`) rather than Tiptap custom commands, to avoid
  * module augmentation and keep the core framework-neutral.
@@ -175,6 +188,7 @@ export const TrackChanges = Extension.create<TrackChangesExtensionOptions>({
       }),
       TrackChangesText,
       TrackChangesClipboard,
+      TrackChangesRewrite,
     ];
   },
 });

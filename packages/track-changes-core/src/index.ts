@@ -67,10 +67,19 @@ export {
 export type { SuggestingOptions } from './plugin';
 
 export {
+  SUGGESTION_TX_META,
+  tagSuggestionTx,
+  isRewriteExempt,
+  createRewriteSuggestingPlugin,
+  rewriteSuggestingKey,
+} from './rewrite';
+
+export {
   TrackChanges,
   TrackChangesCore,
   TrackChangesText,
   TrackChangesClipboard,
+  TrackChangesRewrite,
   InsertionMark,
   DeletionMark,
   createTrackChangesExtension,

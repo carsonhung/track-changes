@@ -24,6 +24,7 @@ import {
   rejectAllOn,
   listSuggestions,
   toClean,
+  tagSuggestionTx,
   type SuggestionSummary,
 } from '@tdg-reports/track-changes-core';
 
@@ -110,7 +111,9 @@ export default defineComponent({
       if (!ed) return;
       const tr = ed.state.tr;
       mutate(tr);
-      if (tr.docChanged || tr.steps.length) ed.view.dispatch(tr);
+      // Accept/reject transactions are already suggestion-resolved; tag them so
+      // the rewrite plugin doesn't re-encode them as new suggestions.
+      if (tr.docChanged || tr.steps.length) ed.view.dispatch(tagSuggestionTx(tr));
     };
 
     const dispatchCmd = (cmd: (state: Editor['state'], dispatch: (tr: Transaction) => void) => boolean) => {

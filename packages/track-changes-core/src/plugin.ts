@@ -7,6 +7,7 @@ import {
   type TrackChangesStateOptions,
 } from './state';
 import { suggestInsertTextAt, suggestDeleteBackward, suggestDeleteForward } from './commands';
+import { createRewriteSuggestingPlugin } from './rewrite';
 
 /**
  * Suggesting mode is composed CKEditor-style: one state-owning core plugin
@@ -20,11 +21,11 @@ import { suggestInsertTextAt, suggestDeleteBackward, suggestDeleteForward } from
  * |---|---|---|
  * | `createTextSuggestingPlugin` | typing, Backspace/Delete | insertion / deletion marks |
  * | `createClipboardSuggestingPlugin` | paste, cut | tracked insert of pasted text; cut becomes a tracked deletion |
+ * | `createRewriteSuggestingPlugin` | everything else (IME composition, drag-and-drop, programmatic edits) | untagged transactions rewritten into suggestion form via `appendTransaction` |
  *
- * Known limitation: IME composition and structural edits (e.g. Enter splitting
- * a paragraph) bypass editor props and apply untracked. Intercepting them needs
- * transaction rewriting (`appendTransaction`) — planned as another feature
- * plugin; see the architecture doc.
+ * Known limitation: structural edits (Enter splits, wraps) and formatting
+ * changes pass through untracked — the mark model cannot encode them; see the
+ * architecture doc.
  */
 
 /** Back-compat alias; options simply seed the state plugin. */
@@ -114,5 +115,6 @@ export function createSuggestingPlugins(options: SuggestingOptions = {}): Plugin
     createTrackChangesStatePlugin(options),
     createTextSuggestingPlugin(),
     createClipboardSuggestingPlugin(),
+    createRewriteSuggestingPlugin(),
   ];
 }

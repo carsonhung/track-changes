@@ -1,5 +1,33 @@
 # @tdg-reports/track-changes-core
 
+## 0.5.0
+
+- **P2d — transaction-rewrite feature plugin (`createRewriteSuggestingPlugin`,
+  new `rewrite.ts`).** The safety net under the prop-based plugins: in
+  suggesting mode, any untagged doc-changing transaction is rewritten into
+  suggestion form via `appendTransaction`. Closes the IME-composition gap and
+  additionally covers drag-and-drop moves (tracked delete + insert) and
+  programmatic inline edits:
+  - inserted inline content → insertion-marked; wholesale-inserted trackable
+    block nodes → `suggestion: insertion` attribute
+  - deleted inline content → restored deletion-marked ahead of the insertion
+    point (Word-style); the author's own un-accepted insertions are dropped for
+    real, so IME composition updates (which repeatedly replace the author's own
+    composed text) resolve to a single clean insertion
+- **Transaction tagging contract.** New `SUGGESTION_TX_META` /
+  `tagSuggestionTx(tr)` / `isRewriteExempt(tr)`: every transaction produced by
+  this package's commands is tagged as already suggestion-encoded; undo/redo
+  (`history$`) and `addToHistory: false` (external sync) transactions are
+  exempt. Hosts dispatching their own resolution transactions (e.g. building on
+  `acceptOn`/`rejectOn` directly) must tag them with `tagSuggestionTx`.
+- New Tiptap feature extension `TrackChangesRewrite`, composed into the
+  `TrackChanges` glue and `createSuggestingPlugins()` (new `rewriteSuggestingKey`).
+- Documented remaining pass-through (by design of the mark model): structural
+  edits (Enter splits, ReplaceAroundStep wraps), formatting changes, and
+  multi-block deletions apply untracked.
+- 10 new headless tests (`rewrite.test.ts`) driven through
+  `EditorState.apply` → `appendTransaction` — 39 total.
+
 ## 0.4.0
 
 - **CKEditor-style modular plugin architecture.** Suggesting mode is now a
