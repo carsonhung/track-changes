@@ -3,6 +3,19 @@
   "version": "0.8.0",
   "description": "Vue 3 adapter for @tdg-reports/track-changes-core: a thin <TrackChangesEditor> built on @tiptap/vue-3.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://git.teli.hku.hk/tdg/track-changes.git",
+    "directory": "packages/track-changes-vue"
+  },
+  "keywords": [
+    "vue",
+    "tiptap",
+    "prosemirror",
+    "track-changes",
+    "suggesting",
+    "editor"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -25,7 +38,7 @@
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "peerDependencies": {
-    "@tdg-reports/track-changes-core": "*",
+    "@tdg-reports/track-changes-core": ">=0.6.0",
     "@tiptap/core": "^2.0.0",
     "@tiptap/starter-kit": "^2.0.0",
     "@tiptap/vue-3": "^2.0.0",

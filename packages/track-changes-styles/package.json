@@ -3,6 +3,11 @@
   "version": "0.5.0",
   "description": "Screen + print CSS for track-changes ins/del rendering.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://git.teli.hku.hk/tdg/track-changes.git",
+    "directory": "packages/track-changes-styles"
+  },
   "exports": {
     "./track-changes.css": "./track-changes.css"
   },

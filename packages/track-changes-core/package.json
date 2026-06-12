@@ -3,6 +3,19 @@
   "version": "0.6.0",
   "description": "Headless track-changes (suggesting mode) engine for ProseMirror/Tiptap. Inline text + node-level (atom images, structural nodes like table rows): insert/delete/accept/reject/clean.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://git.teli.hku.hk/tdg/track-changes.git",
+    "directory": "packages/track-changes-core"
+  },
+  "keywords": [
+    "prosemirror",
+    "tiptap",
+    "track-changes",
+    "suggesting",
+    "redlining",
+    "editor"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
