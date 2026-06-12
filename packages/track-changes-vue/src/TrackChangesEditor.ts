@@ -9,7 +9,7 @@ import {
   type PropType,
 } from 'vue';
 import { Editor, EditorContent, type Extensions } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
+import StarterKit, { type StarterKitOptions } from '@tiptap/starter-kit';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import type { Transaction } from '@tiptap/pm/state';
 import type { TrackChangesEditorLike } from './useTrackChangesReview';
@@ -72,6 +72,28 @@ export interface TrackChangesEditorApi extends TrackChangesEditorLike {
 const EMPTY_DOC: Json = { type: 'doc', content: [{ type: 'paragraph' }] };
 
 /**
+ * Formatting-gated StarterKit pieces, disabled unless a feature re-enables
+ * them via `EditorFeature.starterKitOptions` (the formatting feature does,
+ * per its `buttons`). Disabling removes the mark/node from the schema, so the
+ * restriction is real: no keyboard shortcut, no markdown input rule, and
+ * pasted formatting is stripped on parse. Structure (paragraphs, hard breaks,
+ * history, cursors) stays enabled always.
+ */
+const RESTRICTED_STARTER_KIT: Partial<StarterKitOptions> = {
+  bold: false,
+  italic: false,
+  strike: false,
+  code: false,
+  heading: false,
+  bulletList: false,
+  orderedList: false,
+  listItem: false,
+  blockquote: false,
+  codeBlock: false,
+  horizontalRule: false,
+};
+
+/**
  * Thin Vue 3 adapter. Owns a Tiptap `Editor` with StarterKit + the
  * track-changes extension. Mutations are emitted via `update:modelValue`;
  * accept/reject are exposed imperatively. One-way binding after mount (the
@@ -125,13 +147,17 @@ export default defineComponent({
     const isEditable = (mode: EditorMode, readonly: boolean) => !readonly && mode !== 'viewing';
 
     onMounted(() => {
+      const starterKitConfig = props.features.reduce<Partial<StarterKitOptions>>(
+        (cfg, f) => ({ ...cfg, ...(f.starterKitOptions?.() ?? {}) }),
+        { ...RESTRICTED_STARTER_KIT },
+      );
       const instance = new Editor({
         // Tiptap accepts both PM JSON and an HTML string as initial content,
         // so the input side is format-agnostic regardless of the `format` prop.
         content: props.modelValue || EMPTY_DOC,
         editable: isEditable(props.mode, props.readonly),
         extensions: [
-          StarterKit,
+          StarterKit.configure(starterKitConfig),
           createTrackChangesExtension({
             suggesting: props.mode === 'suggesting',
             authorId: props.authorId,

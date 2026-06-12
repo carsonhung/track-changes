@@ -461,6 +461,13 @@ strikethrough (tracked marks) and heading 2–3 / bullet / numbered lists
 (block-type changes — structural, pass-through untracked by design of the mark
 model). Enabled per field via `richtextFeatures: ['formatting', …]`.
 
+Formatting is **schema-gated, not just toolbar-gated**: the editor disables
+every formatting-related StarterKit piece by default, and the feature
+re-enables exactly what its `buttons` option renders via the
+`EditorFeature.starterKitOptions()` hook. A field without the formatting
+feature blocks Ctrl+B/I, markdown input rules, and pasted markup at the
+ProseMirror schema level (the marks/nodes simply don't exist there).
+
 ## 8. Testing
 
 - **core** — `vitest` golden-file tests with `prosemirror-test-builder`:

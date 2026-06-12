@@ -1,5 +1,17 @@
 # @tdg-reports/track-changes-vue
 
+## 0.7.0
+
+- **Formatting is now opt-in at the schema level (breaking-ish default).**
+  `<TrackChangesEditor>` configures StarterKit with every formatting-related
+  piece disabled (bold, italic, strike, code, headings, lists, blockquote,
+  code block, horizontal rule); a new `EditorFeature.starterKitOptions()` hook
+  lets features re-enable pieces, and `createFormattingFeature()` re-enables
+  exactly what its `buttons` option renders. An editor without the formatting
+  feature therefore truly cannot be formatted — no Ctrl+B/I shortcut, no
+  markdown input rules, and pasted markup is stripped by the schema (the marks
+  don't exist). Structure (paragraphs, hard breaks, history, cursors) stays on.
+
 ## 0.6.0
 
 - **P2f — formatting feature (`createFormattingFeature`).** Toolbar buttons

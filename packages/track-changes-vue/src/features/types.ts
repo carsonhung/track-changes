@@ -54,4 +54,15 @@ export interface EditorFeature {
   extensions?: () => AnyExtension[];
   /** Toolbar contributions, evaluated against the live editor on every transaction. */
   toolbarItems?: () => EditorToolbarItem[];
+  /**
+   * StarterKit options this feature re-enables, shallow-merged over the
+   * editor's restrictive base config. `<TrackChangesEditor>` disables every
+   * formatting-related StarterKit piece (bold, italic, strike, code, headings,
+   * lists, blockquote, code block, horizontal rule) by default, so a field
+   * without the formatting feature truly cannot be formatted — no toolbar
+   * button, no Ctrl+B/I shortcut, no markdown input rule, and pasted markup is
+   * stripped by the schema. The formatting feature re-enables exactly the
+   * pieces its `buttons` option renders.
+   */
+  starterKitOptions?: () => Record<string, unknown>;
 }

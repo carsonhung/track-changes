@@ -3,8 +3,11 @@ import type { EditorFeature, EditorToolbarItem } from './types';
 
 /**
  * Formatting feature (CKEditor `Bold`/`Italic`/… equivalents, P2f). All the
- * underlying marks/nodes ship with StarterKit, so this feature contributes no
- * extensions — only toolbar items.
+ * underlying marks/nodes ship with StarterKit; this feature contributes
+ * toolbar items plus the `starterKitOptions` that re-enable exactly those
+ * pieces (the editor disables every formatting-related StarterKit piece by
+ * default, so fields WITHOUT this feature truly cannot be formatted — no
+ * shortcut, no markdown input rule, pasted markup stripped).
  *
  * Track-changes integration is free by design: the buttons dispatch plain
  * Tiptap toggle commands, whose `AddMarkStep` / `RemoveMarkStep` transactions
@@ -107,8 +110,29 @@ export function createFormattingFeature(options: FormattingFeatureOptions = {}):
   const labels: FormattingFeatureLabels = { ...DEFAULT_LABELS, ...options.labels };
   const buttons = options.buttons ?? DEFAULT_BUTTONS;
 
+  // Re-enable exactly the StarterKit pieces the rendered buttons need (the
+  // editor disables all formatting by default — see RESTRICTED_STARTER_KIT).
+  // What you see in the toolbar is therefore exactly what the field allows,
+  // shortcuts and paste included.
+  const starterKitOptions = (): Record<string, unknown> => {
+    const opts: Record<string, unknown> = {};
+    if (buttons.includes('bold')) opts.bold = {};
+    if (buttons.includes('italic')) opts.italic = {};
+    if (buttons.includes('strike')) opts.strike = {};
+    const levels = [
+      ...(buttons.includes('heading2') ? [2] : []),
+      ...(buttons.includes('heading3') ? [3] : []),
+    ];
+    if (levels.length) opts.heading = { levels };
+    if (buttons.includes('bulletList') || buttons.includes('orderedList')) opts.listItem = {};
+    if (buttons.includes('bulletList')) opts.bulletList = {};
+    if (buttons.includes('orderedList')) opts.orderedList = {};
+    return opts;
+  };
+
   return {
     name: 'formatting',
+    starterKitOptions,
     toolbarItems: () =>
       buttons.map((code): EditorToolbarItem => {
         const def = BUTTONS[code];
