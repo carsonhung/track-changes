@@ -7,13 +7,17 @@ import {
   watch,
   type PropType,
 } from 'vue';
-import { Editor, EditorContent } from '@tiptap/vue-3';
+import { Editor, EditorContent, type Extensions } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
+import type { Node as PMNode } from '@tiptap/pm/model';
 import type { Transaction } from '@tiptap/pm/state';
+import type { TrackChangesEditorLike } from './useTrackChangesReview';
 import {
   createTrackChangesExtension,
   setSuggesting,
   setSuggestionAuthor,
+  suggestInsertNode,
+  suggestDeleteNode,
   acceptOn,
   rejectOn,
   acceptAllOn,
@@ -26,6 +30,25 @@ import {
 export type EditorMode = 'editing' | 'suggesting' | 'viewing';
 
 type Json = Record<string, unknown>;
+
+/**
+ * Imperative API exposed by `<TrackChangesEditor>` via a template ref. Vue
+ * unwraps refs on the exposed instance, so `editor` reads as `Editor | null`.
+ */
+export interface TrackChangesEditorApi extends TrackChangesEditorLike {
+  editor: Editor | null;
+  accept: (id: string) => void;
+  reject: (id: string) => void;
+  acceptAll: () => void;
+  rejectAll: () => void;
+  setSuggesting: (on: boolean) => void;
+  /** Insert a node (inline atom or trackable block) as a tracked insertion. */
+  insertNode: (node: PMNode, at?: number) => void;
+  /** Suggest deletion of the node at `pos` (keep it, mark it deleted). */
+  deleteNode: (pos: number) => void;
+  listSuggestions: () => SuggestionSummary[];
+  getClean: () => Json | null;
+}
 
 const EMPTY_DOC: Json = { type: 'doc', content: [{ type: 'paragraph' }] };
 
@@ -43,6 +66,12 @@ export default defineComponent({
     authorId: { type: String as PropType<string | null>, default: null },
     mode: { type: String as PropType<EditorMode>, default: 'suggesting' },
     readonly: { type: Boolean, default: false },
+    /**
+     * Extra Tiptap node/mark extensions (e.g. Image, Table) so the host can
+     * track node-level changes. Make trackable block nodes carry the
+     * `suggestion` attribute via `suggestionNodeAttributes()` from the core.
+     */
+    extraExtensions: { type: Array as PropType<Extensions>, default: () => [] },
   },
   emits: {
     'update:modelValue': (_value: Json) => true,
@@ -63,6 +92,7 @@ export default defineComponent({
             suggesting: props.mode === 'suggesting',
             authorId: props.authorId,
           }),
+          ...props.extraExtensions,
         ],
         onUpdate: ({ editor: ed }) => emit('update:modelValue', ed.getJSON() as Json),
       });
@@ -116,6 +146,10 @@ export default defineComponent({
       acceptAll: () => applyTr((tr) => acceptAllOn(tr)),
       rejectAll: () => applyTr((tr) => rejectAllOn(tr)),
       setSuggesting: (on: boolean) => dispatchCmd(setSuggesting(on)),
+      /** Insert a node (atom or trackable block) as a tracked insertion. */
+      insertNode: (node: PMNode, at?: number) => dispatchCmd(suggestInsertNode(node, at)),
+      /** Suggest deletion of the node at `pos` (keep it, mark it deleted). */
+      deleteNode: (pos: number) => dispatchCmd(suggestDeleteNode(pos)),
       listSuggestions: (): SuggestionSummary[] =>
         editor.value ? listSuggestions(editor.value.state.doc) : [],
       getClean: (): Json | null =>

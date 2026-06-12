@@ -23,6 +23,45 @@
   text-decoration-color: var(--tc-del-color, #b91c1c);
 }
 
+/*
+ * Inline atoms (e.g. inline images) carry the same .tc-ins / .tc-del classes via
+ * the insertion/deletion marks. Underline/line-through don't read on a
+ * replaced element, so give them a coloured outline instead.
+ */
+.tc-ins img,
+img.tc-ins {
+  outline: 2px solid var(--tc-ins-color, #15803d);
+  outline-offset: 1px;
+}
+
+.tc-del img,
+img.tc-del {
+  outline: 2px dashed var(--tc-del-color, #b91c1c);
+  outline-offset: 1px;
+  opacity: 0.7;
+}
+
+/*
+ * Block / structural nodes (block image, table row) are tracked via the
+ * `suggestion` node attribute, rendered as data-suggestion-type + a
+ * .tc-node-ins / .tc-node-del class on the block element itself.
+ */
+.tc-node-ins {
+  background: var(--tc-ins-bg, rgba(34, 197, 94, 0.14));
+  box-shadow: inset 3px 0 0 0 var(--tc-ins-color, #15803d);
+}
+
+.tc-node-del {
+  background: var(--tc-del-bg, rgba(239, 68, 68, 0.12));
+  box-shadow: inset 3px 0 0 0 var(--tc-del-color, #b91c1c);
+}
+
+/* A deletion-marked table row reads as struck-through across its cells. */
+tr.tc-node-del > * {
+  text-decoration: line-through;
+  text-decoration-color: var(--tc-del-color, #b91c1c);
+}
+
 /* Editor surface niceties (optional; host may override). */
 .tc-editor .ProseMirror {
   outline: none;
@@ -44,5 +83,26 @@
     color: #000;
     background: transparent;
     text-decoration: line-through;
+  }
+
+  .tc-ins img,
+  img.tc-ins {
+    outline: 1.5px solid #000;
+  }
+
+  .tc-del img,
+  img.tc-del {
+    outline: 1.5px dashed #000;
+    opacity: 1;
+  }
+
+  .tc-node-ins {
+    background: transparent;
+    box-shadow: inset 3px 0 0 0 #000;
+  }
+
+  .tc-node-del {
+    background: transparent;
+    box-shadow: inset 3px 0 0 0 #000;
   }
 }

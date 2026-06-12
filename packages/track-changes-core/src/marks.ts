@@ -5,6 +5,14 @@ export const INSERTION = 'insertion';
 export const DELETION = 'deletion';
 
 /**
+ * The two kinds of suggestion. Shared by both encodings — inline marks
+ * (`marks.ts`) and the block/structural node attribute (`nodeAttrs.ts`) — so the
+ * accept/reject engine treats them uniformly. Lives here to avoid an
+ * `nodeAttrs` ↔ `clean` import cycle.
+ */
+export type SuggestionType = 'insertion' | 'deletion';
+
+/**
  * Suggestion mark attributes. `id` groups a logical change; `authorId` and `ts`
  * support per-author rendering and audit. Encoded as document data (a mark),
  * never plugin state, so it survives serialization and (future) Yjs sync.

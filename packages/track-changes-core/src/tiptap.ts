@@ -1,5 +1,40 @@
 import { Extension, Mark, mergeAttributes } from '@tiptap/core';
 import { createSuggestingPlugin, type SuggestingOptions } from './plugin';
+import {
+  SUGGESTION_NODE_ATTR,
+  suggestionFromDom,
+  suggestionToDomAttrs,
+  type NodeSuggestion,
+} from './nodeAttrs';
+
+/**
+ * Tiptap `addAttributes()` fragment that makes a node trackable via the
+ * `suggestion` node attribute. Spread it into a node extension's own
+ * `addAttributes()` so block / structural nodes (block image, table row) carry
+ * and render the suggestion state:
+ *
+ * ```ts
+ * Image.extend({
+ *   addAttributes() {
+ *     return { ...this.parent?.(), ...suggestionNodeAttributes() }
+ *   },
+ * })
+ * ```
+ *
+ * The attribute renders to `data-suggestion` / `data-suggestion-type` /
+ * `data-author` / `data-ts` plus a `tc-node-ins` / `tc-node-del` class, matching
+ * `@tdg-reports/track-changes-styles`.
+ */
+export function suggestionNodeAttributes() {
+  return {
+    [SUGGESTION_NODE_ATTR]: {
+      default: null as NodeSuggestion | null,
+      parseHTML: (el: HTMLElement) => suggestionFromDom(el),
+      renderHTML: (attrs: Record<string, unknown>) =>
+        suggestionToDomAttrs((attrs[SUGGESTION_NODE_ATTR] as NodeSuggestion | null) ?? null),
+    },
+  };
+}
 
 /**
  * Tiptap (MIT) marks mirroring the raw ProseMirror MarkSpecs in `marks.ts`, so

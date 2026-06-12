@@ -1,6 +1,6 @@
 {
   "name": "@tdg-reports/track-changes-styles",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Screen + print CSS for track-changes ins/del rendering.",
   "license": "MIT",
   "exports": {

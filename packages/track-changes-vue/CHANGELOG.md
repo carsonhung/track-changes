@@ -1,5 +1,14 @@
 # @tdg-reports/track-changes-vue
 
+## 0.4.0
+
+- **P2b node-level support.** `<TrackChangesEditor>` gains an `extraExtensions`
+  prop so the host can add node extensions (Image, Table) whose block/structural
+  nodes track changes via the core's `suggestionNodeAttributes()`.
+- Exposes `insertNode(node, at?)` and `deleteNode(pos)` on the imperative API,
+  plus a new exported `TrackChangesEditorApi` type describing the full exposed
+  surface.
+
 ## 0.3.0
 
 - Add `useTrackChangesReview(editorRef)` — a headless review composable that

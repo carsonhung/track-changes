@@ -5,7 +5,17 @@
 // serialize, print, and (later) sync over Yjs without redesign.
 
 export { INSERTION, DELETION, insertionMarkSpec, deletionMarkSpec, insertionType, deletionType } from './marks';
-export type { SuggestionAttrs } from './marks';
+export type { SuggestionAttrs, SuggestionType } from './marks';
+
+export {
+  SUGGESTION_NODE_ATTR,
+  suggestionNodeAttrSpec,
+  isTrackableNode,
+  readNodeSuggestion,
+  suggestionToDomAttrs,
+  suggestionFromDom,
+} from './nodeAttrs';
+export type { NodeSuggestion } from './nodeAttrs';
 
 export { createSuggestionId } from './ids';
 
@@ -23,7 +33,7 @@ export {
   listSuggestions,
   hasSuggestions,
 } from './clean';
-export type { SuggestionSummary, SuggestionRange, SuggestionType } from './clean';
+export type { SuggestionSummary, SuggestionRange } from './clean';
 
 export {
   setSuggesting,
@@ -32,6 +42,8 @@ export {
   suggestInsertTextAt,
   suggestDeleteBackward,
   suggestDeleteForward,
+  suggestInsertNode,
+  suggestDeleteNode,
   acceptSuggestion,
   rejectSuggestion,
   acceptAllSuggestions,
@@ -41,9 +53,9 @@ export {
 export { createSuggestingPlugin } from './plugin';
 export type { SuggestingOptions } from './plugin';
 
-export { TrackChanges, InsertionMark, DeletionMark, createTrackChangesExtension } from './tiptap';
+export { TrackChanges, InsertionMark, DeletionMark, createTrackChangesExtension, suggestionNodeAttributes } from './tiptap';
 export type { TrackChangesExtensionOptions } from './tiptap';
 
-export { withSuggestionMarks, createBasicSuggestionSchema } from './schema';
+export { withSuggestionMarks, createBasicSuggestionSchema, createExtendedSuggestionSchema } from './schema';
 
 export { VERSION } from './version';

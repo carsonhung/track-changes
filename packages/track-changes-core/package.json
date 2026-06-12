@@ -1,7 +1,7 @@
 {
   "name": "@tdg-reports/track-changes-core",
-  "version": "0.2.0",
-  "description": "Headless track-changes (suggesting mode) engine for ProseMirror/Tiptap. Phase 1: inline text (insert/delete/accept/reject/clean).",
+  "version": "0.3.0",
+  "description": "Headless track-changes (suggesting mode) engine for ProseMirror/Tiptap. Inline text + node-level (atom images, structural nodes like table rows): insert/delete/accept/reject/clean.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",

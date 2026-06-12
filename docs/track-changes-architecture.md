@@ -1,9 +1,12 @@
 # Track Changes — Architecture
 
-> **Status:** Phase 1 implemented (v0.36.0). Headless core + Vue adapter +
-> print/screen CSS + a demo sandbox at `/admin/track-changes-demo`. **Not yet
-> wired into the live report flow.** Companion to `docs/track-changes-rfc.md`
-> (the *why*); this document is the *how* of what shipped.
+> **Status:** P1 + P2a + P2b implemented (core 0.3.0 / vue 0.4.0). Headless core
+> (inline text **and** node-level: atom images + structural table rows) + Vue
+> adapter + print/screen CSS + a demo sandbox at `/admin/track-changes-demo`.
+> Live report **revise-and-resubmit** uses inline-text track changes (§6.1);
+> node-level tracking is demo-only until a report schema needs image/table
+> fields. Companion to `docs/track-changes-rfc.md` (the *why*); this document is
+> the *how* of what shipped.
 
 ## 1. Layering at a glance
 
@@ -242,9 +245,59 @@ so no separate baseline column is required.
 |---|---|---|
 | **P1** | headless core + inline text + Vue adapter + print CSS + demo + `richtext` field type (schema-renderer seam) | **done (v0.36.0 / .2)** |
 | **P2a** | headless `useTrackChangesReview` + reusable `SuggestionReviewPanel`; **live report revise-and-resubmit wiring** (tester A4) | **done (v0.36.4 / 0.37.0)** |
-| P2b | atom nodes (images), tables | next |
+| **P2b** | atom nodes (images) + block/structural nodes (table rows) — see §9 | **done (core 0.3.0 / vue 0.4.0)** |
 | P3 | React adapter from the same core | future |
 | P4 | collaboration (CRDT/OT) over the same mark model | future |
+
+## 9. P2b — node-level change tracking (atoms + structural nodes)
+
+P1 tracked only inline **text**. P2b extends the same keystone rule ("suggestions
+are document data") to nodes, using **two encodings** resolved uniformly by the
+accept/reject engine:
+
+| Content | Encoding | Why |
+|---|---|---|
+| text | `insertion` / `deletion` **mark** | P1, unchanged |
+| inline atom (inline image) | `insertion` / `deletion` **mark** | marks are allowed on inline atoms; renders as `<ins><img></ins>` |
+| block / structural node (block image, `tableRow`) | `suggestion` **node attribute** `{type,id,authorId,ts}` | a block can't carry an inline mark; the attribute serializes + renders to `data-suggestion-type` |
+
+Both encodings live in the document (mark attrs / node attrs), so persistence,
+print/PDF and future Yjs sync work the same as for text.
+
+### 9.1 Core surface added
+
+- `nodeAttrs.ts` — `SUGGESTION_NODE_ATTR`, `NodeSuggestion`, `readNodeSuggestion`,
+  `suggestionNodeAttrSpec()` (raw PM), `suggestionToDomAttrs` / `suggestionFromDom`,
+  `isTrackableNode`.
+- `commands.ts` — `markRangeDeleted` now also marks inline atoms; new
+  `suggestInsertNode(node, at?)` (inline → mark, block → attr) and
+  `suggestDeleteNode(pos)` (keeps the node, marks it deleted; an author's own
+  un-accepted inserted node is removed for real).
+- `clean.ts` — the accept/reject engine was rewritten around a unified "suggestion
+  unit" (mark or node). Deletions resolve via a **mapping-based** pass so deleting
+  an ancestor collapses descendant ranges correctly (nested suggestions);
+  keep/strip is a size-stable second pass. `listSuggestions` gains `kind` +
+  `nodeType`; `hasSuggestions` covers both encodings.
+- `tiptap.ts` — `suggestionNodeAttributes()` is a Tiptap `addAttributes()`
+  fragment so a host node extension (Image, TableRow) becomes trackable with one
+  spread, rendering the `data-*` + `tc-node-ins` / `tc-node-del` classes.
+- `schema.ts` — `createExtendedSuggestionSchema()` (image atom, block figure,
+  minimal table/row/cell) backs the headless `nodes.test.ts` suite.
+
+### 9.2 Vue + styles + demo
+
+- `<TrackChangesEditor>` gains an `extraExtensions` prop (host adds Image/Table
+  node extensions) and exposes `insertNode(node, at?)` / `deleteNode(pos)`
+  (`TrackChangesEditorApi`).
+- `track-changes-styles` adds atom-image outlines and block `.tc-node-ins` /
+  `.tc-node-del` styling, with `@media print` variants.
+- `/admin/track-changes-demo` seeds an inline image + a 3-row table and adds an
+  "Node-level changes (P2b)" toolbar (insert/delete image, insert/delete row);
+  the existing `SuggestionReviewPanel` accept/reject already drives node
+  suggestions (it now labels text-less node changes by node type).
+
+Not yet wired into a live report form (the report schema has no image/table
+fields today); doing so is a schema change per the platform rule, not core code.
 
 ## 8. Testing
 
