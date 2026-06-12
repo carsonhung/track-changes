@@ -65,16 +65,53 @@ released open-source unchanged.
 src/
   ids.ts        createSuggestionId() — unique mark ids
   marks.ts      insertion & deletion MarkSpecs ({id, authorId, ts})
-  state.ts      PluginKey + TrackChangesState (suggesting on/off, authorId)
-  plugin.ts     createSuggestingPlugin() — intercepts input/keys
+  nodeAttrs.ts  `suggestion` node-attribute encoding for block/structural nodes
+  state.ts      PluginKey + TrackChangesState + createTrackChangesStatePlugin()
+                (the single state-owning core plugin)
+  plugin.ts     feature plugins: createTextSuggestingPlugin() (typing, Backspace/
+                Delete), createClipboardSuggestingPlugin() (paste, cut), and the
+                createSuggestingPlugins() composite
   commands.ts   ProseMirror commands (setSuggesting, suggestInsertText,
-                acceptSuggestion, …) — used by the Tiptap layer
+                suggestInsertNode, acceptSuggestion, …) — used by the Tiptap layer
   clean.ts      pure Transform ops (acceptOn/rejectOn/…) + projections
                 (toClean/toRejected/toTracked) + queries (listSuggestions)
   schema.ts     withSuggestionMarks() helper for standalone PM schemas (tests)
-  tiptap.ts     InsertionMark, DeletionMark, TrackChanges extension wrapper
+  tiptap.ts     InsertionMark, DeletionMark; modular extensions (TrackChangesCore /
+                Text / Clipboard) + TrackChanges glue + trackableNode() helper
   index.ts      public barrel
 ```
+
+### 2.2 Plugin architecture (CKEditor-style composition)
+
+Suggesting mode follows the composition CKEditor 5 uses for track changes: a
+**core editing plugin** that owns the state, plus independent, stateless
+**feature plugins** — one per input surface — that read that state. Per-component
+support (tables, images) plugs in via a one-line integration helper rather than
+core changes.
+
+| Layer | Raw ProseMirror | Tiptap |
+|---|---|---|
+| state core (required) | `createTrackChangesStatePlugin()` | `TrackChangesCore` |
+| typing + Backspace/Delete | `createTextSuggestingPlugin()` | `TrackChangesText` |
+| paste + cut | `createClipboardSuggestingPlugin()` | `TrackChangesClipboard` |
+| everything (glue) | `createSuggestingPlugins()` | `TrackChanges` |
+| component integration | `suggestionNodeAttrSpec()` in the NodeSpec | `trackableNode(NodeExtension)` |
+
+Input coverage in suggesting mode:
+
+| Input | Handled by | Tracked as |
+|---|---|---|
+| typed text | text plugin (`handleTextInput`) | insertion mark |
+| Backspace / Delete | text plugin (`handleKeyDown`) | deletion mark (text kept); own un-accepted insertions removed for real; already-deleted segments skipped; consecutive presses merge into one suggestion |
+| paste | clipboard plugin (`handlePaste`) | insertion mark over the slice's text (rich pastes flatten to text; text-less slices blocked, never applied untracked) |
+| cut | clipboard plugin (`handleDOMEvents.cut`) | clipboard written manually; selection becomes a tracked deletion |
+| **IME composition** | **not yet** — bypasses editor props | applied untracked (known limitation) |
+| **structural edits** (Enter split, etc.) | **not yet** | applied untracked (known limitation) |
+
+The two gaps share one proper fix — an `appendTransaction` feature plugin that
+rewrites any untagged doc-changing transaction into suggestion form — planned as
+the next core increment, slotting into this composition without touching the
+existing plugins.
 
 ## 3. The keystone rule — suggestions are document data, not plugin state
 
@@ -112,8 +149,8 @@ deletion:  { attrs: { id, authorId, ts } }  // rendered as <del data-…>
 ```
 user types ──▶ Tiptap Editor ──▶ ProseMirror tr
                                      │
-              createSuggestingPlugin │ intercepts
-                                     ▼
+            text/clipboard feature   │ intercepts (see §2.2)
+            plugins                  ▼
    new text gets `insertion` mark (current authorId, fresh id, ts)
    backspace/delete over normal text ──▶ adds `deletion` mark (text kept)
    backspace over own un-accepted insertion ──▶ truly removed
@@ -246,6 +283,8 @@ so no separate baseline column is required.
 | **P1** | headless core + inline text + Vue adapter + print CSS + demo + `richtext` field type (schema-renderer seam) | **done (v0.36.0 / .2)** |
 | **P2a** | headless `useTrackChangesReview` + reusable `SuggestionReviewPanel`; **live report revise-and-resubmit wiring** (tester A4) | **done (v0.36.4 / 0.37.0)** |
 | **P2b** | atom nodes (images) + block/structural nodes (table rows) — see §9 | **done (core 0.3.0 / vue 0.4.0)** |
+| **P2c** | modular plugin architecture (CKEditor-style, §2.2) + tracked clipboard (paste/cut) + deletion re-mark guard & merging | **done (core 0.4.0)** |
+| P2d | `appendTransaction` interception plugin — IME composition + structural edits (Enter splits) | next |
 | P3 | React adapter from the same core | future |
 | P4 | collaboration (CRDT/OT) over the same mark model | future |
 

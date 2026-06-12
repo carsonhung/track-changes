@@ -1,5 +1,40 @@
 # @tdg-reports/track-changes-core
 
+## 0.4.0
+
+- **CKEditor-style modular plugin architecture.** Suggesting mode is now a
+  state-owning core plugin plus small, stateless feature plugins (one per input
+  surface) that read the shared state:
+  - `createTrackChangesStatePlugin(options)` (in `state.ts`) — single owner of
+    mode/author state under `trackChangesKey`; new `isSuggesting(state)` helper.
+  - `createTextSuggestingPlugin()` — typing + Backspace/Delete.
+  - `createClipboardSuggestingPlugin()` — paste + cut (new, see below).
+  - `createSuggestingPlugins(options)` — the full composite set.
+  - Tiptap mirrors the same split: `TrackChangesCore` / `TrackChangesText` /
+    `TrackChangesClipboard` extensions, with the existing `TrackChanges` glue
+    extension composing all three (public `createTrackChangesExtension()` API
+    unchanged).
+  - New `trackableNode(NodeExtension)` per-component integration helper — wraps
+    any Tiptap Node so it carries/renders the `suggestion` attribute (the
+    one-line equivalent of a CKEditor feature integration plugin).
+- **Tracked clipboard.** Paste in suggesting mode becomes a tracked insertion of
+  the pasted slice's text (rich/structural pastes flatten to text; a slice with
+  no text is blocked rather than applied untracked). Cut writes the clipboard
+  manually and records the removal as a tracked deletion (text stays,
+  deletion-marked). New `sliceText(slice)` helper.
+- **Fix: re-deleting over an existing suggested deletion** no longer re-marks it
+  with a new id/author — already-deletion-marked segments are skipped, so a
+  second author sweeping the same range can't silently steal or fragment the
+  first author's suggestion.
+- **Deletion merging.** Consecutive Backspace/Delete presses now merge into one
+  suggestion by reusing the id of the adjacent same-author deletion (parity with
+  how consecutive typing merges insertions).
+- **Breaking:** `createSuggestingPlugin` (singular) removed — use
+  `createSuggestingPlugins(options)` (returns the plugin array) or the Tiptap
+  extensions. `SuggestingOptions` is now an alias of `TrackChangesStateOptions`.
+- Documented limitation: IME composition and structural edits (Enter splits)
+  still bypass interception; planned as an `appendTransaction` feature plugin.
+
 ## 0.3.0
 
 - **P2b — node-level change tracking.** Extends the keystone rule beyond inline

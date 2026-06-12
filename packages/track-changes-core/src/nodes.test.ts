@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { EditorState, TextSelection, type Command, type Transaction } from '@tiptap/pm/state';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { createExtendedSuggestionSchema } from './schema';
-import { createSuggestingPlugin } from './plugin';
+import { createSuggestingPlugins } from './plugin';
 import { suggestInsertNode, suggestDeleteNode } from './commands';
 import { toClean, toRejected, listSuggestions, hasSuggestions } from './clean';
 import { readNodeSuggestion } from './nodeAttrs';
@@ -13,7 +13,7 @@ function stateWith(doc: PMNode, authorId = 'A') {
   return EditorState.create({
     schema,
     doc,
-    plugins: [createSuggestingPlugin({ suggesting: true, authorId })],
+    plugins: createSuggestingPlugins({ suggesting: true, authorId }),
   });
 }
 

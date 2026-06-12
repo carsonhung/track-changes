@@ -3,7 +3,7 @@ import { EditorState, TextSelection, type Command, type Transaction } from '@tip
 import { Transform } from '@tiptap/pm/transform';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { createBasicSuggestionSchema } from './schema';
-import { createSuggestingPlugin } from './plugin';
+import { createSuggestingPlugins } from './plugin';
 import {
   suggestInsertText,
   suggestDeleteBackward,
@@ -20,7 +20,7 @@ function stateWith(text: string, authorId = 'A') {
   return EditorState.create({
     schema,
     doc: docNode,
-    plugins: [createSuggestingPlugin({ suggesting: true, authorId })],
+    plugins: createSuggestingPlugins({ suggesting: true, authorId }),
   });
 }
 

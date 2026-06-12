@@ -1,5 +1,10 @@
-import { Extension, Mark, mergeAttributes } from '@tiptap/core';
-import { createSuggestingPlugin, type SuggestingOptions } from './plugin';
+import { Extension, Mark, mergeAttributes, type Node } from '@tiptap/core';
+import {
+  createTextSuggestingPlugin,
+  createClipboardSuggestingPlugin,
+  type SuggestingOptions,
+} from './plugin';
+import { createTrackChangesStatePlugin } from './state';
 import {
   SUGGESTION_NODE_ATTR,
   suggestionFromDom,
@@ -106,14 +111,19 @@ export interface TrackChangesExtensionOptions {
   authorId: string | null;
 }
 
+// ---------------------------------------------------------------------------
+// Modular Tiptap extensions (CKEditor-style composition): one core editing
+// extension owning schema + state, plus per-surface feature extensions. The
+// `TrackChanges` glue bundles them all; hosts wanting fine-grained control
+// (e.g. text tracking without clipboard interception) compose manually.
+// ---------------------------------------------------------------------------
+
 /**
- * Bundles the two suggestion marks and the suggesting plugin into one Tiptap
- * extension. Mode/author are applied imperatively via the `setSuggesting` /
- * `setSuggestionAuthor` commands (see `commands.ts`) rather than Tiptap custom
- * commands, to avoid module augmentation and keep the core framework-neutral.
+ * Core editing extension — registers the suggestion marks and the state plugin
+ * (mode/author). Required by every feature extension; carries the options.
  */
-export const TrackChanges = Extension.create<TrackChangesExtensionOptions>({
-  name: 'trackChanges',
+export const TrackChangesCore = Extension.create<TrackChangesExtensionOptions>({
+  name: 'trackChangesCore',
   addOptions() {
     return { suggesting: false, authorId: null };
   },
@@ -121,12 +131,75 @@ export const TrackChanges = Extension.create<TrackChangesExtensionOptions>({
     return [InsertionMark, DeletionMark];
   },
   addProseMirrorPlugins() {
-    return [createSuggestingPlugin({ suggesting: this.options.suggesting, authorId: this.options.authorId })];
+    return [
+      createTrackChangesStatePlugin({
+        suggesting: this.options.suggesting,
+        authorId: this.options.authorId,
+      }),
+    ];
+  },
+});
+
+/** Feature extension: typed text + Backspace/Delete become suggestions. */
+export const TrackChangesText = Extension.create({
+  name: 'trackChangesText',
+  addProseMirrorPlugins() {
+    return [createTextSuggestingPlugin()];
+  },
+});
+
+/** Feature extension: paste becomes a tracked insertion; cut a tracked deletion. */
+export const TrackChangesClipboard = Extension.create({
+  name: 'trackChangesClipboard',
+  addProseMirrorPlugins() {
+    return [createClipboardSuggestingPlugin()];
+  },
+});
+
+/**
+ * Glue extension bundling the full set (core + text + clipboard). Mode/author
+ * are applied imperatively via the `setSuggesting` / `setSuggestionAuthor`
+ * commands (see `commands.ts`) rather than Tiptap custom commands, to avoid
+ * module augmentation and keep the core framework-neutral.
+ */
+export const TrackChanges = Extension.create<TrackChangesExtensionOptions>({
+  name: 'trackChanges',
+  addOptions() {
+    return { suggesting: false, authorId: null };
+  },
+  addExtensions() {
+    return [
+      TrackChangesCore.configure({
+        suggesting: this.options.suggesting,
+        authorId: this.options.authorId,
+      }),
+      TrackChangesText,
+      TrackChangesClipboard,
+    ];
   },
 });
 
 export function createTrackChangesExtension(options?: Partial<TrackChangesExtensionOptions>) {
   return TrackChanges.configure(options ?? {});
+}
+
+/**
+ * Per-component integration helper: wrap any Tiptap Node extension so its nodes
+ * carry (and render) the `suggestion` attribute — the one-line equivalent of a
+ * CKEditor feature integration plugin:
+ *
+ * ```ts
+ * const TrackedTableRow = trackableNode(TableRow)
+ * const TrackedImage    = trackableNode(Image)
+ * ```
+ */
+export function trackableNode<N extends Node>(node: N): N {
+  // `extend` widens the generic signature; the runtime shape is unchanged.
+  return node.extend({
+    addAttributes() {
+      return { ...(this.parent?.() ?? {}), ...suggestionNodeAttributes() };
+    },
+  }) as N;
 }
 
 export type { SuggestingOptions };

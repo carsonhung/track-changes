@@ -19,8 +19,14 @@ export type { NodeSuggestion } from './nodeAttrs';
 
 export { createSuggestionId } from './ids';
 
-export { trackChangesKey, getTrackChangesState, DEFAULT_TC_STATE } from './state';
-export type { TrackChangesState } from './state';
+export {
+  trackChangesKey,
+  getTrackChangesState,
+  isSuggesting,
+  DEFAULT_TC_STATE,
+  createTrackChangesStatePlugin,
+} from './state';
+export type { TrackChangesState, TrackChangesStateOptions } from './state';
 
 export {
   acceptOn,
@@ -50,10 +56,27 @@ export {
   rejectAllSuggestions,
 } from './commands';
 
-export { createSuggestingPlugin } from './plugin';
+export {
+  createSuggestingPlugins,
+  createTextSuggestingPlugin,
+  createClipboardSuggestingPlugin,
+  textSuggestingKey,
+  clipboardSuggestingKey,
+  sliceText,
+} from './plugin';
 export type { SuggestingOptions } from './plugin';
 
-export { TrackChanges, InsertionMark, DeletionMark, createTrackChangesExtension, suggestionNodeAttributes } from './tiptap';
+export {
+  TrackChanges,
+  TrackChangesCore,
+  TrackChangesText,
+  TrackChangesClipboard,
+  InsertionMark,
+  DeletionMark,
+  createTrackChangesExtension,
+  suggestionNodeAttributes,
+  trackableNode,
+} from './tiptap';
 export type { TrackChangesExtensionOptions } from './tiptap';
 
 export { withSuggestionMarks, createBasicSuggestionSchema, createExtendedSuggestionSchema } from './schema';

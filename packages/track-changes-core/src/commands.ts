@@ -31,9 +31,35 @@ export function setSuggestionAuthor(authorId: string | null): Command {
 // ---------------------------------------------------------------------------
 
 /**
- * Mark [from,to] as a suggested deletion. Content that is the current author's
- * own (not-yet-accepted) insertion is removed for real instead of being
- * deletion-marked, so authors can freely undo their own suggested additions.
+ * Find an existing same-author deletion suggestion immediately adjacent to
+ * [from,to] so consecutive Backspace/Delete presses merge into one suggestion
+ * (mirroring how consecutive typing merges insertions via `insertionAttrsAt`).
+ */
+function adjacentDeletionAttrs(
+  tr: Transaction,
+  from: number,
+  to: number,
+  delType: MarkType,
+  authorId: string | null,
+): { id: string; authorId: string | null; ts: number } | null {
+  for (const pos of [to, Math.max(0, from - 1)]) {
+    const node = tr.doc.nodeAt(pos);
+    const prev = node?.marks.find(
+      (m) => m.type === delType && (m.attrs.authorId ?? null) === (authorId ?? null),
+    );
+    if (prev) return { id: String(prev.attrs.id), authorId, ts: Number(prev.attrs.ts) || Date.now() };
+  }
+  return null;
+}
+
+/**
+ * Mark [from,to] as a suggested deletion. Three cases per segment:
+ * - already deletion-marked (any author) → skipped, so re-deleting over an
+ *   existing suggestion never re-attributes or fragments it
+ * - the current author's own (not-yet-accepted) insertion → removed for real,
+ *   so authors can freely undo their own suggested additions
+ * - everything else → deletion-marked, reusing the id of an adjacent
+ *   same-author deletion so consecutive presses form one suggestion
  * `addMark` is size-stable, so the real deletes (applied last, descending) keep
  * their original positions.
  */
@@ -54,6 +80,7 @@ function markRangeDeleted(
     const start = Math.max(pos, from);
     const end = Math.min(pos + node.nodeSize, to);
     if (start >= end) return;
+    if (node.marks.some((m) => m.type === delType)) return; // already a suggested deletion
     const own = node.marks.find(
       (m) => m.type === insType && (m.attrs.authorId ?? null) === (authorId ?? null),
     );
@@ -61,8 +88,10 @@ function markRangeDeleted(
   });
 
   if (markDeletes.length) {
-    const id = createSuggestionId();
-    const mark = delType.create({ id, authorId, ts: Date.now() });
+    const attrs =
+      adjacentDeletionAttrs(tr, from, to, delType, authorId) ??
+      { id: createSuggestionId(), authorId, ts: Date.now() };
+    const mark = delType.create(attrs);
     for (const r of markDeletes) tr.addMark(r.from, r.to, mark);
   }
   realDeletes.sort((a, b) => b.from - a.from).forEach((r) => tr.delete(r.from, r.to));
