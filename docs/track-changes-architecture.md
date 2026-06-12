@@ -246,16 +246,26 @@ revise-and-resubmit wiring landed in v0.37.0 — see §6.1).
 1. **[done]** `richtext` field type — `FormField.type` accepts `'richtext'`
    (value = ProseMirror JSON, not a string), with an optional
    `richtextMode: 'editing' | 'suggesting' | 'viewing'`.
-2. **[done]** `SchemaFormRenderer` renders `richtext` fields with
-   `<TrackChangesEditor>`, **lazy-loaded** (`defineAsyncComponent`) so the heavy
-   Tiptap/ProseMirror chunk is fetched only when a schema actually contains a
-   richtext field — text/likert-only report forms stay lean. Mode derives from
-   `readonly` (→ `viewing`) else the field's `richtextMode`. Demonstrated on
-   `/admin/track-changes-demo` ("As a schema form field"). Adding a richtext
-   field to a real form is therefore a **JSON schema change**, not code.
+2. **[done]** `SchemaFormRenderer` renders `richtext` fields through the app's
+   `RichtextField.vue` wrapper, **lazy-loaded** (`defineAsyncComponent`) so the
+   heavy Tiptap/ProseMirror chunk is fetched only when a schema actually
+   contains a richtext field — text/likert-only report forms stay lean. Mode
+   derives from `readonly` (→ `viewing`) else the field's `richtextMode`.
+   Demonstrated on `/admin/track-changes-demo` ("As a schema form field").
+   Adding a richtext field to a real form is therefore a **JSON schema
+   change**, not code.
 3. **[done, v0.37.0]** Report "revise" state (tester A4) — see §6.1 below.
 4. **[free]** PDF export already works because marks are real `<ins>`/`<del>`
    elements.
+5. **[done, v0.46.0]** Editor features per field — `FormField` gains
+   `richtextFeatures?: string[]` (e.g. `['imageUpload', 'table']`); the schema
+   flag is resolved by `RichtextField.vue`'s registry (code → P2e
+   `EditorFeature` factory with i18n labels + the default data-URL upload
+   handler). Section 5 of the 2026 report form and the backend-seeded PI
+   submission form (republished v1.1) enable both features, so PIs can embed
+   figures and tables in narratives — tracked like any text edit during
+   revise-and-resubmit. Enabling a feature on another field is a **schema
+   change**, adding a new feature is one registry entry.
 
 ### 6.1 Live report revise-and-resubmit (v0.37.0)
 
