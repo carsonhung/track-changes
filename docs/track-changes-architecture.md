@@ -1,6 +1,6 @@
 # Track Changes — Architecture
 
-> **Status:** P1 + P2a + P2b + P2c + P2d implemented (core 0.5.0 / vue 0.4.1). Headless core
+> **Status:** P1 + P2a + P2b + P2c + P2d + P2e implemented (core 0.5.0 / vue 0.5.0). Headless core
 > (inline text **and** node-level: atom images + structural table rows) + Vue
 > adapter + print/screen CSS + a demo sandbox at `/admin/track-changes-demo`.
 > Live report **revise-and-resubmit** uses inline-text track changes (§6.1);
@@ -297,6 +297,7 @@ so no separate baseline column is required.
 | **P2b** | atom nodes (images) + block/structural nodes (table rows) — see §9 | **done (core 0.3.0 / vue 0.4.0)** |
 | **P2c** | modular plugin architecture (CKEditor-style, §2.2) + tracked clipboard (paste/cut) + deletion re-mark guard & merging | **done (core 0.4.0)** |
 | **P2d** | `appendTransaction` rewrite plugin — IME composition, drag-and-drop, programmatic edits + the `SUGGESTION_TX_META` tagging contract (§2.2); structural edits remain pass-through by design of the mark model | **done (core 0.5.0 / vue 0.4.1)** |
+| **P2e** | editor feature plugins (CKEditor-style, §10) — `EditorFeature` contract, built-in toolbar, image-upload + table features, host upload glue | **done (vue 0.5.0 / styles 0.4.0)** |
 | P3 | React adapter from the same core | future |
 | P4 | collaboration (CRDT/OT) over the same mark model | future |
 
@@ -349,6 +350,53 @@ print/PDF and future Yjs sync work the same as for text.
 
 Not yet wired into a live report form (the report schema has no image/table
 fields today); doing so is a schema change per the platform rule, not core code.
+
+## 10. P2e — editor feature plugins (CKEditor-style features)
+
+P2c made *suggesting-mode interception* modular; P2e extends the same idea to
+*editor capabilities*. In CKEditor a feature is not just engine code — it
+bundles the engine plugin **plus its UI** (toolbar button) **plus platform
+glue** (e.g. an upload adapter). The Vue adapter now mirrors that:
+
+```ts
+// features/types.ts (track-changes-vue)
+interface EditorFeature {
+  name: string
+  extensions?: () => AnyExtension[]        // engine: Tiptap nodes/marks/plugins
+  toolbarItems?: () => EditorToolbarItem[] // UI: rendered by the built-in toolbar
+}
+type EditorUploadHandler = (file: File) => Promise<{ src: string; alt?: string }>
+```
+
+- `<TrackChangesEditor :features="[...]" :upload-handler="...">` composes
+  features like CKEditor's `plugins: [...]` config. The component renders a
+  `.tc-toolbar` whenever features contribute items (auto-hidden in
+  viewing/readonly); items re-evaluate `isEnabled` / `isActive` against the
+  live editor on every transaction (an `editorTick` ref subscribes the render).
+- **Track-changes awareness is the feature author's job**, made trivial by the
+  shared helpers `featureInsertNode` / `featureDeleteNode`: suggestion commands
+  (`suggestInsertNode` / `suggestDeleteNode`) when suggesting, plain edits when
+  editing. Feature edits are therefore reviewable suggestions like any other.
+- **Upload glue stays in the host.** The package never talks to a backend; the
+  app's `lib/editorUploads.ts` provides a data-URL handler (demo / mock phase)
+  and `createAttachmentUploadHandler(entityType, entityId)` which records the
+  file through the generic `/api/attachments` endpoint (storage adapter, audit,
+  access control) while embedding a self-contained data-URL `src` — the
+  download endpoint needs an Authorization header `<img>` can't send; when the
+  backend grows signed inline URLs only this handler changes.
+
+Built-in features (both label-overridable for i18n):
+
+| Feature | Engine | Toolbar |
+|---|---|---|
+| `createImageUploadFeature()` | `TrackedImage` inline atom (tracked via marks, P2b) | Insert image (picker → upload → tracked insert), Remove image (selection-aware) |
+| `createTableFeature()` | `TrackedTable` / `TrackedTableRow` / `TrackedTableCell` (row/cell via `trackableNode()`) | Insert table, Add row, Delete row (selection-aware; keeps ≥ 1 row so the table stays schema-valid) |
+
+The demo page composes both features and dropped its bespoke "Node-level
+changes" button card and local node-extension module — the P2b §9.2 toolbar is
+superseded by the feature toolbar. The table nodes remain demo-grade (no column
+ops / resizing); swap the node set for `prosemirror-tables` inside the same
+feature when a real schema needs it.
 
 ## 8. Testing
 

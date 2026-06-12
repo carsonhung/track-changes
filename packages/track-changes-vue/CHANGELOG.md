@@ -1,5 +1,31 @@
 # @tdg-reports/track-changes-vue
 
+## 0.5.0
+
+- **P2e — CKEditor-style editor feature plugins.** New `features/` layer: an
+  `EditorFeature` is a self-contained bundle of Tiptap extensions + toolbar
+  items + host glue, composed via the new `features` prop — like CKEditor's
+  `plugins: [...]` config:
+  - `<TrackChangesEditor>` gains `features: EditorFeature[]` and
+    `uploadHandler: (file) => Promise<{ src, alt? }>` props, and renders a
+    built-in `.tc-toolbar` whenever features contribute items (auto-hidden in
+    viewing/readonly state; items re-evaluate `isEnabled`/`isActive` on every
+    editor transaction).
+  - `createImageUploadFeature(options?)` — registers a minimal inline atom
+    `image` node (`TrackedImage`, tracked via the core's marks) plus
+    "Insert image" (file picker → host `uploadHandler` → tracked insertion
+    when suggesting) and selection-aware "Remove image" buttons. The package
+    owns no upload transport — the host decides where bytes go.
+  - `createTableFeature(options?)` — registers demo-grade `TrackedTable` /
+    `TrackedTableRow` / `TrackedTableCell` nodes (row/cell wrapped with the
+    core's `trackableNode()`) plus selection-aware insert-table / add-row /
+    delete-row buttons (delete keeps ≥ 1 row so the table stays schema-valid).
+  - Shared helpers `featureInsertNode` / `featureDeleteNode` (suggestion
+    commands when suggesting, plain edits otherwise) and `pickFile` exported
+    for custom features. All labels overridable for i18n via feature options.
+- Pair with `@tdg-reports/track-changes-styles` ≥ 0.4.0 for the toolbar and
+  feature-node styles.
+
 ## 0.4.1
 
 - Accept/reject transactions dispatched by `<TrackChangesEditor>` and

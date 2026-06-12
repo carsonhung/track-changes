@@ -1,5 +1,14 @@
 # @tdg-reports/track-changes-styles
 
+## 0.4.0
+
+- P2e: feature toolbar + feature node styles. New `.tc-toolbar` /
+  `.tc-toolbar-btn` (hover, disabled, `--active` states; themable via
+  `--tc-toolbar-*` variables) for the toolbar `<TrackChangesEditor>` renders
+  when feature plugins contribute items, hidden in print. New `.tc-img`
+  (inline image sizing) and `.tc-table` / `.tc-table td` (collapsed borders,
+  padded cells with a min-width so empty cells stay clickable).
+
 ## 0.3.0
 
 - P2b: style node-level suggestions. Inline atom images get a coloured

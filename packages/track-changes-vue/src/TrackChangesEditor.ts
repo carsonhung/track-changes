@@ -3,6 +3,7 @@ import {
   h,
   onBeforeUnmount,
   onMounted,
+  ref,
   shallowRef,
   watch,
   type PropType,
@@ -12,6 +13,7 @@ import StarterKit from '@tiptap/starter-kit';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import type { Transaction } from '@tiptap/pm/state';
 import type { TrackChangesEditorLike } from './useTrackChangesReview';
+import type { EditorFeature, EditorFeatureContext, EditorUploadHandler } from './features/types';
 import {
   createTrackChangesExtension,
   setSuggesting,
@@ -73,6 +75,21 @@ export default defineComponent({
      * `suggestion` attribute via `suggestionNodeAttributes()` from the core.
      */
     extraExtensions: { type: Array as PropType<Extensions>, default: () => [] },
+    /**
+     * CKEditor-style feature plugins (see `features/types.ts`). Each feature
+     * contributes Tiptap extensions plus toolbar items rendered by the
+     * built-in toolbar (hidden when no feature contributes items, or in
+     * viewing/readonly state).
+     */
+    features: { type: Array as PropType<EditorFeature[]>, default: () => [] },
+    /**
+     * Host upload glue consumed by upload-needing features (image upload).
+     * The package never talks to a backend itself.
+     */
+    uploadHandler: {
+      type: Function as unknown as PropType<EditorUploadHandler | null>,
+      default: null,
+    },
   },
   emits: {
     'update:modelValue': (_value: Json) => true,
@@ -80,6 +97,8 @@ export default defineComponent({
   },
   setup(props, { emit, expose }) {
     const editor = shallowRef<Editor | null>(null);
+    // Bumped on every editor transaction so toolbar isEnabled/isActive re-evaluate.
+    const editorTick = ref(0);
 
     const isEditable = (mode: EditorMode, readonly: boolean) => !readonly && mode !== 'viewing';
 
@@ -93,9 +112,13 @@ export default defineComponent({
             suggesting: props.mode === 'suggesting',
             authorId: props.authorId,
           }),
+          ...props.features.flatMap((f) => f.extensions?.() ?? []),
           ...props.extraExtensions,
         ],
         onUpdate: ({ editor: ed }) => emit('update:modelValue', ed.getJSON() as Json),
+      });
+      instance.on('transaction', () => {
+        editorTick.value += 1;
       });
       editor.value = instance;
       emit('ready', instance);
@@ -160,6 +183,41 @@ export default defineComponent({
     };
     expose(api);
 
-    return () => h('div', { class: 'tc-editor' }, editor.value ? [h(EditorContent, { editor: editor.value })] : []);
+    const renderToolbar = (ed: Editor) => {
+      if (props.readonly || props.mode === 'viewing') return null;
+      const items = props.features.flatMap((f) => f.toolbarItems?.() ?? []);
+      if (!items.length) return null;
+      void editorTick.value; // subscribe: re-render on every editor transaction
+      const ctx: EditorFeatureContext = { editor: ed, upload: props.uploadHandler ?? null };
+      return h(
+        'div',
+        { class: 'tc-toolbar', role: 'toolbar' },
+        items.map((item) =>
+          h(
+            'button',
+            {
+              key: item.id,
+              type: 'button',
+              class: ['tc-toolbar-btn', { 'tc-toolbar-btn--active': item.isActive?.(ctx) ?? false }],
+              disabled: item.isEnabled ? !item.isEnabled(ctx) : false,
+              title: item.label,
+              'aria-label': item.label,
+              onClick: () => void item.run(ctx),
+            },
+            item.text,
+          ),
+        ),
+      );
+    };
+
+    return () => {
+      const ed = editor.value;
+      if (!ed) return h('div', { class: 'tc-editor' });
+      const toolbar = renderToolbar(ed);
+      return h('div', { class: 'tc-editor' }, [
+        ...(toolbar ? [toolbar] : []),
+        h(EditorContent, { editor: ed }),
+      ]);
+    };
   },
 });

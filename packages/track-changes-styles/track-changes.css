@@ -72,7 +72,67 @@ tr.tc-node-del > * {
   outline: none;
 }
 
+/*
+ * Feature toolbar (rendered by <TrackChangesEditor> when features contribute
+ * items). Deliberately minimal; hosts theme via the variables or override.
+ */
+.tc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+  margin-bottom: 0.375rem;
+  border-bottom: 1px solid var(--tc-toolbar-border, rgba(0, 0, 0, 0.08));
+}
+
+.tc-toolbar-btn {
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--tc-toolbar-border, rgba(0, 0, 0, 0.12));
+  border-radius: 0.35rem;
+  background: var(--tc-toolbar-btn-bg, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.tc-toolbar-btn:hover:not(:disabled) {
+  background: var(--tc-toolbar-btn-hover-bg, rgba(0, 0, 0, 0.05));
+}
+
+.tc-toolbar-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tc-toolbar-btn--active {
+  background: var(--tc-toolbar-btn-active-bg, rgba(0, 0, 0, 0.08));
+}
+
+/* Feature nodes: tracked inline image + demo-grade table. */
+.tc-img {
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.tc-table {
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  width: 100%;
+}
+
+.tc-table td {
+  border: 1px solid var(--tc-table-border, rgba(0, 0, 0, 0.18));
+  padding: 0.3rem 0.5rem;
+  min-width: 3rem;
+}
+
 @media print {
+  .tc-toolbar {
+    display: none;
+  }
+
   .tc-ins {
     color: #000;
     background: transparent;
