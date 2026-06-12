@@ -145,7 +145,13 @@ export default defineComponent({
      * submit/validation time via the same projection.
      */
     maxCharacters: { type: Number as PropType<number | null>, default: null },
-    /** Show the character/word footer even without a `maxCharacters` cap. */
+    /**
+     * Soft word limit (same clean-projection semantics as `maxCharacters`).
+     * Either cap alone or both together; the footer flags the over-limit
+     * state when any set cap is exceeded.
+     */
+    maxWords: { type: Number as PropType<number | null>, default: null },
+    /** Show the character/word footer even without a cap. */
     showCharacterCount: { type: Boolean, default: false },
   },
   emits: {
@@ -278,24 +284,39 @@ export default defineComponent({
     };
 
     const renderCharacterCount = (ed: Editor) => {
-      if (props.maxCharacters == null && !props.showCharacterCount) return null;
+      if (props.maxCharacters == null && props.maxWords == null && !props.showCharacterCount) {
+        return null;
+      }
       void editorTick.value; // subscribe: recount on every editor transaction
       const { characters, words } = countCleanText(ed.state.doc);
-      const over = props.maxCharacters != null && characters > props.maxCharacters;
+      const charsOver = props.maxCharacters != null && characters > props.maxCharacters;
+      const wordsOver = props.maxWords != null && words > props.maxWords;
       const charText =
         props.maxCharacters != null
           ? `${characters.toLocaleString()} / ${props.maxCharacters.toLocaleString()}`
           : characters.toLocaleString();
+      const wordText =
+        props.maxWords != null
+          ? `${words.toLocaleString()} / ${props.maxWords.toLocaleString()}w`
+          : `${words.toLocaleString()}w`;
       return h(
         'div',
         {
-          class: ['tc-charcount', { 'tc-charcount--over': over }],
+          class: ['tc-charcount', { 'tc-charcount--over': charsOver || wordsOver }],
           role: 'status',
           'aria-live': 'polite',
         },
         [
-          h('span', { class: 'tc-charcount-chars' }, charText),
-          h('span', { class: 'tc-charcount-words' }, ` · ${words.toLocaleString()}w`),
+          h(
+            'span',
+            { class: ['tc-charcount-chars', { 'tc-charcount-part--over': charsOver }] },
+            charText,
+          ),
+          h(
+            'span',
+            { class: ['tc-charcount-words', { 'tc-charcount-part--over': wordsOver }] },
+            ` · ${wordText}`,
+          ),
         ],
       );
     };

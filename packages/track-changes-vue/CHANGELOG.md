@@ -1,5 +1,13 @@
 # @tdg-reports/track-changes-vue
 
+## 0.11.0
+
+- **`maxWords` soft word limit.** Companion to `maxCharacters` with the same
+  clean-projection semantics (`countCleanText`): the footer shows
+  `45 / 500w`, and the over-limit state flags whichever cap is exceeded
+  (`.tc-charcount-part--over` highlights the specific exceeded part). Either
+  cap can be set alone or both together; input is still never hard-blocked.
+
 ## 0.10.0
 
 - **Table columns + header row.** The table feature gains Add column /

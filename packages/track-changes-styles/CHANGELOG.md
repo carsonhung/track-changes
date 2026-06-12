@@ -1,5 +1,12 @@
 # @tdg-reports/track-changes-styles
 
+## 0.6.1
+
+- `.tc-charcount-part--over`: per-part over-limit emphasis (bold + red) so a
+  word-cap overflow highlights the word segment specifically while the
+  character segment stays muted (and vice versa). `.tc-charcount--over` on
+  the container keeps the overall red tint.
+
 ## 0.6.0
 
 - Table header cells: `.tc-table th` (border + padding shared with `td`,

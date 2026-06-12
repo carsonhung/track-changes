@@ -157,6 +157,11 @@ tr.tc-node-del > * {
 
 .tc-charcount--over {
   color: var(--tc-charcount-over-fg, #b91c1c);
+}
+
+/* The specific exceeded part (chars or words) when only one cap is over. */
+.tc-charcount-part--over {
+  color: var(--tc-charcount-over-fg, #b91c1c);
   font-weight: 600;
 }
 
