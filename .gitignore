@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.tsup/
+tsup.config.bundled_*.mjs
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example

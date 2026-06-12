@@ -1,0 +1,19 @@
+{
+  "name": "track-changes-monorepo",
+  "private": true,
+  "description": "Track-changes (suggesting mode) packages for ProseMirror/Tiptap: headless core, Vue 3 adapter, screen+print CSS.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://git.teli.hku.hk/tdg/track-changes.git"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=@tdg-reports/track-changes-core && npm run build --workspace=@tdg-reports/track-changes-vue",
+    "test": "npm run test --workspace=@tdg-reports/track-changes-core",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present"
+  }
+}
