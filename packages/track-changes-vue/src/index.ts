@@ -1,6 +1,6 @@
 export { default as TrackChangesEditor } from './TrackChangesEditor';
 export type { EditorMode, EditorFormat, TrackChangesEditorApi } from './TrackChangesEditor';
-export type { SuggestionSummary } from '@tdg-reports/track-changes-core';
+export type { SuggestionSummary } from '@carsonhung/track-changes-core';
 
 export { useTrackChangesReview } from './useTrackChangesReview';
 export type { UseTrackChangesReview, TrackChangesEditorLike } from './useTrackChangesReview';

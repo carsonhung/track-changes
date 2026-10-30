@@ -4,7 +4,7 @@
 declare const __TC_VERSION__: string;
 
 /**
- * Semver of `@tdg-reports/track-changes-vue`, injected at build time.
+ * Semver of `@carsonhung/track-changes-vue`, injected at build time.
  * Reads `0.0.0-dev` when imported from source rather than the built bundle.
  */
 export const VERSION: string =

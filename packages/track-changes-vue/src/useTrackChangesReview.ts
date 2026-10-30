@@ -10,7 +10,7 @@ import {
   listSuggestions,
   tagSuggestionTx,
   type SuggestionSummary,
-} from '@tdg-reports/track-changes-core';
+} from '@carsonhung/track-changes-core';
 
 type Json = Record<string, unknown>;
 

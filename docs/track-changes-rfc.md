@@ -2,7 +2,7 @@
 
 > **Status:** **Phase 1 implemented (v0.36.0).** Headless core + inline-text
 > suggesting + Vue adapter + print/screen CSS shipped as standalone
-> `@tdg-reports/track-changes-*` packages, exercised by a demo sandbox at
+> `@carsonhung/track-changes-*` packages, exercised by a demo sandbox at
 > `/admin/track-changes-demo`. **Not yet wired into the live report flow** —
 > P2 (atom nodes/tables + `richtext` field), P3 (React), and P4
 > (collaboration) remain future work. See `docs/track-changes-architecture.md`

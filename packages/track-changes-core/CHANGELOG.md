@@ -1,4 +1,4 @@
-# @tdg-reports/track-changes-core
+# @carsonhung/track-changes-core
 
 ## 0.8.0
 

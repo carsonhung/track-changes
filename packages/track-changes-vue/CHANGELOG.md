@@ -1,4 +1,11 @@
-# @tdg-reports/track-changes-vue
+# @carsonhung/track-changes-vue
+
+## 0.11.2
+
+- **Late `modelValue` hydration.** When the host sets `modelValue` after the
+  editor mounts (e.g. a draft loaded asynchronously), the editor now loads it
+  once. After the first non-empty document or any local edit, external
+  `modelValue` changes no longer overwrite the editor content.
 
 ## 0.11.0
 
@@ -115,7 +122,7 @@
   - Shared helpers `featureInsertNode` / `featureDeleteNode` (suggestion
     commands when suggesting, plain edits otherwise) and `pickFile` exported
     for custom features. All labels overridable for i18n via feature options.
-- Pair with `@tdg-reports/track-changes-styles` ≥ 0.4.0 for the toolbar and
+- Pair with `@carsonhung/track-changes-styles` ≥ 0.4.0 for the toolbar and
   feature-node styles.
 
 ## 0.4.1
@@ -123,7 +130,7 @@
 - Accept/reject transactions dispatched by `<TrackChangesEditor>` and
   `useTrackChangesReview` are now tagged with the core's `tagSuggestionTx`, so
   the new rewrite plugin (core 0.5.0) never re-encodes a resolution as a fresh
-  suggestion. Requires `@tdg-reports/track-changes-core` ≥ 0.5.0.
+  suggestion. Requires `@carsonhung/track-changes-core` ≥ 0.5.0.
 
 ## 0.4.0
 

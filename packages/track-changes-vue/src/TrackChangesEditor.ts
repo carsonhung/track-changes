@@ -14,6 +14,7 @@ import type { Node as PMNode } from '@tiptap/pm/model';
 import type { Transaction } from '@tiptap/pm/state';
 import type { TrackChangesEditorLike } from './useTrackChangesReview';
 import type { EditorFeature, EditorFeatureContext, EditorUploadHandler } from './features/types';
+import { createModelHydrationGuard, type EditorModelValue } from './modelHydration';
 import {
   createTrackChangesExtension,
   setSuggesting,
@@ -30,7 +31,7 @@ import {
   tagSuggestionTx,
   docToHtml,
   type SuggestionSummary,
-} from '@tdg-reports/track-changes-core';
+} from '@carsonhung/track-changes-core';
 
 export type EditorMode = 'editing' | 'suggesting' | 'viewing';
 
@@ -97,9 +98,9 @@ const RESTRICTED_STARTER_KIT: Partial<StarterKitOptions> = {
 /**
  * Thin Vue 3 adapter. Owns a Tiptap `Editor` with StarterKit + the
  * track-changes extension. Mutations are emitted via `update:modelValue`;
- * accept/reject are exposed imperatively. One-way binding after mount (the
- * editor owns its document) to avoid feedback loops — re-mount via `:key` to
- * load a different document.
+ * accept/reject are exposed imperatively. A mounted empty editor accepts one
+ * asynchronous external hydration; after meaningful content or a local edit,
+ * the editor owns its document to preserve selection, history, and draft work.
  */
 export default defineComponent({
   name: 'TrackChangesEditor',
@@ -160,6 +161,7 @@ export default defineComponent({
   },
   setup(props, { emit, expose }) {
     const editor = shallowRef<Editor | null>(null);
+    const hydrationGuard = createModelHydrationGuard(props.modelValue as EditorModelValue);
     // Bumped on every editor transaction so toolbar isEnabled/isActive re-evaluate.
     const editorTick = ref(0);
 
@@ -184,8 +186,11 @@ export default defineComponent({
           ...props.features.flatMap((f) => f.extensions?.() ?? []),
           ...props.extraExtensions,
         ],
-        onUpdate: ({ editor: ed }) =>
-          emit('update:modelValue', props.format === 'html' ? ed.getHTML() : (ed.getJSON() as Json)),
+        onUpdate: ({ editor: ed }) => {
+          const value = props.format === 'html' ? ed.getHTML() : (ed.getJSON() as Json);
+          hydrationGuard.markLocalChange(value);
+          emit('update:modelValue', value);
+        },
       });
       instance.on('transaction', () => {
         editorTick.value += 1;
@@ -233,6 +238,19 @@ export default defineComponent({
     watch(
       () => props.authorId,
       (authorId) => dispatchCmd(setSuggestionAuthor(authorId)),
+    );
+
+    watch(
+      () => props.modelValue,
+      (modelValue) => {
+        const ed = editor.value;
+        if (!ed || !hydrationGuard.shouldHydrate(modelValue as EditorModelValue)) return;
+        // This path is only reachable before local editing, so replacing the
+        // initial empty document cannot discard selection/history/suggestions.
+        // `emitUpdate: false` prevents a hydration feedback loop.
+        ed.commands.setContent(modelValue || EMPTY_DOC, false);
+      },
+      { deep: true },
     );
 
     const api = {

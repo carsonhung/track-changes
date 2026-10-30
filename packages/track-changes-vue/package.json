@@ -1,12 +1,15 @@
 {
-  "name": "@tdg-reports/track-changes-vue",
-  "version": "0.11.0",
-  "description": "Vue 3 adapter for @tdg-reports/track-changes-core: a thin <TrackChangesEditor> built on @tiptap/vue-3.",
+  "name": "@carsonhung/track-changes-vue",
+  "version": "0.11.2",
+  "description": "Vue 3 adapter for @carsonhung/track-changes-core: a thin <TrackChangesEditor> built on @tiptap/vue-3.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://git.teli.hku.hk/tdg/track-changes.git",
+    "url": "https://github.com/carsonhung/track-changes.git",
     "directory": "packages/track-changes-vue"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "vue",
@@ -38,14 +41,14 @@
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "peerDependencies": {
-    "@tdg-reports/track-changes-core": ">=0.7.0",
+    "@carsonhung/track-changes-core": ">=0.7.0",
     "@tiptap/core": "^2.0.0",
     "@tiptap/starter-kit": "^2.0.0",
     "@tiptap/vue-3": "^2.0.0",
     "vue": "^3.4.0"
   },
   "devDependencies": {
-    "@tdg-reports/track-changes-core": "*",
+    "@carsonhung/track-changes-core": "*",
     "@tiptap/core": "^2.11.0",
     "@tiptap/starter-kit": "^2.11.0",
     "@tiptap/vue-3": "^2.11.0",

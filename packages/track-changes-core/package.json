@@ -1,12 +1,15 @@
 {
-  "name": "@tdg-reports/track-changes-core",
+  "name": "@carsonhung/track-changes-core",
   "version": "0.8.0",
   "description": "Headless track-changes (suggesting mode) engine for ProseMirror/Tiptap. Inline text + node-level (atom images, structural nodes like table rows): insert/delete/accept/reject/clean.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://git.teli.hku.hk/tdg/track-changes.git",
+    "url": "https://github.com/carsonhung/track-changes.git",
     "directory": "packages/track-changes-core"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "prosemirror",

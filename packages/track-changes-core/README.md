@@ -1,10 +1,10 @@
-# @tdg-reports/track-changes-core
+# @carsonhung/track-changes-core
 
 Headless track-changes ("suggesting mode") engine for ProseMirror / Tiptap.
 Framework-free: no Vue, no React, no DOM requirement (HTML codec accepts an
 injected DOM for Node-side use), **no environment variables, no network IO**
 — it transforms documents and nothing else. UI adapters (e.g.
-[`@tdg-reports/track-changes-vue`](../track-changes-vue)) sit on top.
+[`@carsonhung/track-changes-vue`](../track-changes-vue)) sit on top.
 
 MIT licensed; built only on MIT-tier Tiptap/ProseMirror packages.
 
@@ -58,7 +58,7 @@ Encodings:
 import {
   createExtendedSuggestionSchema,
   htmlToDoc, docToHtml, toClean, listSuggestions,
-} from '@tdg-reports/track-changes-core'
+} from '@carsonhung/track-changes-core'
 
 const schema = createExtendedSuggestionSchema()
 const doc = htmlToDoc(storedHtml, schema)        // e.g. from a DB TEXT column

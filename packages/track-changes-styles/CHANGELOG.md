@@ -1,4 +1,4 @@
-# @tdg-reports/track-changes-styles
+# @carsonhung/track-changes-styles
 
 ## 0.6.1
 

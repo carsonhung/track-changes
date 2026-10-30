@@ -58,9 +58,9 @@ this stack is MIT.
 
 | Package | Layer | Depends on | Ships |
 |---|---|---|---|
-| `@tdg-reports/track-changes-core` | headless | `@tiptap/core` + `@tiptap/pm` (peer) | ESM + CJS + `.d.ts` |
-| `@tdg-reports/track-changes-vue` | Vue adapter | core + `@tiptap/vue-3` + `vue` (peer) | ESM + CJS + `.d.ts` |
-| `@tdg-reports/track-changes-styles` | CSS | none | `track-changes.css` |
+| `@carsonhung/track-changes-core` | headless | `@tiptap/core` + `@tiptap/pm` (peer) | ESM + CJS + `.d.ts` |
+| `@carsonhung/track-changes-vue` | Vue adapter | core + `@tiptap/vue-3` + `vue` (peer) | ESM + CJS + `.d.ts` |
+| `@carsonhung/track-changes-styles` | CSS | none | `track-changes.css` |
 
 All three live under `packages/` in this monorepo, are built with **tsup**
 (ESM+CJS+dts) and are independently publishable to npm — nothing in them

@@ -2,7 +2,7 @@ import { Node, Extension, mergeAttributes } from '@tiptap/core';
 import { NodeSelection, Plugin, PluginKey } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
 import type { Editor } from '@tiptap/vue-3';
-import { tagSuggestionTx } from '@tdg-reports/track-changes-core';
+import { tagSuggestionTx } from '@carsonhung/track-changes-core';
 import type { EditorFeature, EditorUrlIngestHandler } from './types';
 import { featureInsertNode, featureDeleteNode, pickFile } from './featureCommands';
 
