@@ -1,6 +1,6 @@
 # Commercial license
 
-track-changes is **dual-licensed**:
+track-changes is **dual-licensed** by Dr. Carson Hung:
 
 1. **[GNU AGPL-3.0](LICENSE)**: free, for projects that comply with it.
 2. **Commercial license**: paid, for everyone else.
@@ -42,7 +42,7 @@ route. We'll follow up privately with terms and pricing.
 Versions released before the switch remain under the license they shipped
 with:
 
-- `track-changes-vue` ≤ 0.12.0 and `track-changes-react` 0.1.0 on npm: MIT
+- `track-changes-vue` ? 0.12.0 and `track-changes-react` 0.1.0 on npm: MIT
 - Repository commits before the switch: MIT, or Apache 2.0 for the commits
   made on 31 October 2026
 

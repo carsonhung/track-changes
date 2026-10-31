@@ -252,7 +252,7 @@ Each package is versioned independently. See its `CHANGELOG.md`.
 
 ## License
 
-Dual-licensed:
+Copyright 2026 Dr. Carson Hung. Dual-licensed:
 
 - **[AGPL-3.0](LICENSE)**: free, if the application you use it in is also
   released as open source under the AGPL.
@@ -261,5 +261,6 @@ Dual-licensed:
   [Request one](https://github.com/carsonhung/track-changes/issues/new?template=commercial-license.yml).
 
 Versions released earlier under MIT (`track-changes-vue` ≤ 0.12.0,
-`track-changes-react` 0.1.0) remain MIT. Originally built for report revisions
-at the Technology-Enriched Learning Initiative, The University of Hong Kong.
+`track-changes-react` 0.1.0) remain MIT. An independent project, originally
+built for report revisions at the Technology-Enriched Learning Initiative, The
+University of Hong Kong.

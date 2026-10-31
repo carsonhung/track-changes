@@ -17,5 +17,6 @@
     "lint": "npm run lint --workspaces --if-present",
     "demo": "npm run build --workspace=track-changes-core && npm run dev --workspace=track-changes-demo",
     "clean": "npm run clean --workspaces --if-present"
-  }
+  },
+  "author": "Dr. Carson Hung"
 }
