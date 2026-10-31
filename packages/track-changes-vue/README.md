@@ -126,9 +126,9 @@ Features are created per editor instance, so disabling a capability is just
   default URL input is `window.prompt`; pass `promptUrl(current, message)` to
   use your own dialog. In suggesting mode, setting/removing a link is recorded
   as a reviewable `format_change` suggestion.
-- `createImageUploadFeature({ labels?, accept?, ingestUrl?, onImagePaste? })`
+- `createImageUploadFeature({ labels?, accept?, ingestUrl?, onImagePaste?, pasteImageLinks? })`
   — Insert/Remove image buttons (via `uploadHandler`), plus **external-image
-  localization**: see below.
+  localization** and **image-link paste**: see below.
 - `createTableFeature({ labels?, rows?, cols?, withHeaderRow? })` — Insert
   table / Add row / Delete row / Add column / Delete column. New tables get a
   `<th>` header row by default. Row ops are tracked per row; column ops are
@@ -152,9 +152,37 @@ catches drag-and-drop and programmatic inserts):
 | `ingestUrl` provided | Handler copies the image into host storage; the node's `src` is swapped to the returned local value. On rejection the image is removed. |
 | No `ingestUrl` | The image is stripped immediately. |
 
-Either way `onImagePaste({ status: 'ingested' \| 'rejected' \| 'stripped', url })`
+Either way `onImagePaste({ status: 'ingested' \| 'rejected' \| 'stripped', url, source: 'image' })`
 fires so the host can show a notice. Read-only views are never mutated, so
 legacy stored content still renders.
+
+`ingestUrl` must resolve with a **local** `src` (relative path, `data:` URL,
+or anything not starting with `http(s)://`) — an absolute `http(s)` result
+is itself treated as external.
+
+### Pasting a cloud link
+
+With `ingestUrl` set, pasting a **bare link** to an image or a cloud-storage
+share (`https://…/photo.png`, Google Drive, OneDrive/SharePoint, Dropbox,
+iCloud, Imgur) inserts the image instead of the link text:
+
+1. An "Importing image…" placeholder (`.tc-img-pending`) marks the paste
+   point; the user can keep typing.
+2. The URL goes to `ingestUrl`. On success the image is inserted at the
+   placeholder — a tracked insertion while suggesting.
+3. On failure the URL is pasted as plain text (what a normal paste would
+   have done).
+
+`onImagePaste` fires with `source: 'link'`. Which links are tried is decided
+by `isLikelyImageLink(url)` (exported); pass `pasteImageLinks: (url) => …` to
+use your own rule, or `false` to always paste links as text.
+
+Share links usually point at a **viewer page**, not the file, so the backend
+endpoint behind `ingestUrl` should map them to direct downloads (e.g. Google
+Drive `…/file/d/<id>/view` → `https://drive.google.com/uc?export=download&id=<id>`,
+Dropbox `?dl=0` → `?dl=1`, OneDrive `…?download=1`), then reject anything
+whose response is not `image/*`. Private links fail cleanly (text fallback)
+unless the server has access.
 
 ## Host integration contract
 

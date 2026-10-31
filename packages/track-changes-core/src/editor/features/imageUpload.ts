@@ -1,6 +1,6 @@
 import { Node, Extension, mergeAttributes } from '@tiptap/core';
 import { NodeSelection, Plugin, PluginKey } from '@tiptap/pm/state';
-import type { EditorView } from '@tiptap/pm/view';
+import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view';
 import type { Editor } from '@tiptap/core';
 import { tagSuggestionTx } from '../../rewrite';
 import type { EditorFeature, EditorUrlIngestHandler } from './types';
@@ -18,6 +18,8 @@ import { featureInsertNode, featureDeleteNode, pickFile } from './featureCommand
  * - **external-image localization**: images whose `src` points at a remote
  *   `http(s)` host (typically pasted from a web page or cloud document) are
  *   never left as hotlinks — see `createImageLocalizerExtension` below
+ * - **image-link paste**: pasting a bare image or cloud-storage link ingests
+ *   it and inserts the image — see `createImageLinkPasteExtension` below
  *
  * The package owns no upload transport: the host passes `uploadHandler` to
  * the editor (e.g. an attachments-API adapter or a data-URL stub).
@@ -67,6 +69,12 @@ export type ImagePasteStatus = 'ingested' | 'rejected' | 'stripped';
 export interface ImagePasteEvent {
   status: ImagePasteStatus;
   url: string;
+  /**
+   * `image` — an external image node (pasted/dropped markup); on `rejected`
+   * it was removed. `link` — a pasted bare URL; on `rejected` the URL was
+   * pasted as plain text instead.
+   */
+  source: 'image' | 'link';
 }
 
 const isExternalSrc = (src: unknown): src is string =>
@@ -138,7 +146,7 @@ function createImageLocalizerExtension(
               if (!ingest) {
                 const urls = [...new Set(found.map((f) => f.src))];
                 urls.forEach((url) => removeImagesBySrc(view, url));
-                urls.forEach((url) => onEvent?.({ status: 'stripped', url }));
+                urls.forEach((url) => onEvent?.({ status: 'stripped', url, source: 'image' }));
                 return;
               }
 
@@ -148,11 +156,11 @@ function createImageLocalizerExtension(
                 ingest(url)
                   .then((result) => {
                     swapImageSrc(view, url, result);
-                    onEvent?.({ status: 'ingested', url });
+                    onEvent?.({ status: 'ingested', url, source: 'image' });
                   })
                   .catch(() => {
                     removeImagesBySrc(view, url);
-                    onEvent?.({ status: 'rejected', url });
+                    onEvent?.({ status: 'rejected', url, source: 'image' });
                   })
                   .finally(() => inflight.delete(url));
               }
@@ -161,6 +169,152 @@ function createImageLocalizerExtension(
             // unsafe, and loaded legacy content deserves the same treatment.
             queueMicrotask(process);
             return { update: process };
+          },
+        }),
+      ];
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Image-link paste
+//
+// Pasting a bare URL that points at an image or a cloud-storage share link
+// (Google Drive, OneDrive, Dropbox, …) inserts the *image*, not the link text.
+// The URL goes through the same `ingestUrl` host handler as pasted hotlinks,
+// so it is copied into platform storage first; turning a share-page URL into
+// the actual file (and rejecting non-images) is the host backend's job. On
+// failure the URL is pasted as plain text, i.e. the paste the user would have
+// got anyway.
+//
+// While ingestion runs, an "Importing image…" widget decoration marks the
+// insertion point; decorations map through concurrent edits, so the image
+// lands where the user pasted even if they kept typing.
+// ---------------------------------------------------------------------------
+
+const IMAGE_PATH = /\.(png|jpe?g|gif|webp|avif|svg|bmp|heic)$/i;
+const IMAGE_LINK_HOSTS = [
+  'drive.google.com',
+  'googleusercontent.com',
+  'onedrive.live.com',
+  '1drv.ms',
+  'sharepoint.com',
+  'dropbox.com',
+  'dropboxusercontent.com',
+  'icloud.com',
+  'imgur.com',
+];
+
+/**
+ * Default `pasteImageLinks` predicate: an `http(s)` URL whose path ends in an
+ * image extension, or any link on a common cloud-storage / image host.
+ */
+export function isLikelyImageLink(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+  if (IMAGE_PATH.test(parsed.pathname)) return true;
+  const host = parsed.hostname.toLowerCase();
+  return IMAGE_LINK_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+}
+
+const BARE_URL = /^https?:\/\/\S+$/i;
+
+type LinkPasteMeta = { add: { id: object; pos: number } } | { remove: { id: object } };
+
+export const imageLinkPasteKey = new PluginKey<DecorationSet>('tcImageLinkPaste');
+
+function createImageLinkPasteExtension(
+  ingest: EditorUrlIngestHandler,
+  matches: (url: string) => boolean,
+  pendingLabel: string,
+  onEvent?: (event: ImagePasteEvent) => void,
+) {
+  return Extension.create({
+    name: 'imageLinkPaste',
+    // Must see the paste before the track-changes clipboard plugin, which
+    // claims every paste while suggesting.
+    priority: 1000,
+    addProseMirrorPlugins() {
+      const editor = this.editor;
+
+      const placeholderPos = (view: EditorView, id: object): number | null => {
+        const set = imageLinkPasteKey.getState(view.state);
+        const found = set?.find(undefined, undefined, (spec) => spec.id === id) ?? [];
+        return found.length ? found[0].from : null;
+      };
+
+      return [
+        new Plugin<DecorationSet>({
+          key: imageLinkPasteKey,
+          state: {
+            init: () => DecorationSet.empty,
+            apply(tr, set) {
+              let next = set.map(tr.mapping, tr.doc);
+              const meta = tr.getMeta(imageLinkPasteKey) as LinkPasteMeta | undefined;
+              if (meta && 'add' in meta) {
+                const widget = Decoration.widget(
+                  meta.add.pos,
+                  (view) => {
+                    const el = view.dom.ownerDocument.createElement('span');
+                    el.className = 'tc-img-pending';
+                    el.textContent = pendingLabel;
+                    return el;
+                  },
+                  { id: meta.add.id },
+                );
+                next = next.add(tr.doc, [widget]);
+              } else if (meta && 'remove' in meta) {
+                next = next.remove(next.find(undefined, undefined, (spec) => spec.id === meta.remove.id));
+              }
+              return next;
+            },
+          },
+          props: {
+            decorations: (state) => imageLinkPasteKey.getState(state),
+            handlePaste(view, event) {
+              const data = event.clipboardData;
+              if (!data) return false;
+              // Real image markup is the localizer's job.
+              if (/<img[\s>]/i.test(data.getData('text/html'))) return false;
+              const url = data.getData('text/plain').trim();
+              if (!BARE_URL.test(url) || !matches(url)) return false;
+
+              const id = {};
+              // Untagged on purpose: while suggesting, replacing a selection
+              // becomes a tracked deletion via the rewrite plugin.
+              const tr = view.state.tr.deleteSelection();
+              view.dispatch(tr.setMeta(imageLinkPasteKey, { add: { id, pos: tr.selection.from } }));
+
+              const settle = (apply: (pos: number) => void) => {
+                if (editor.isDestroyed) return;
+                const pos = placeholderPos(view, id);
+                view.dispatch(view.state.tr.setMeta(imageLinkPasteKey, { remove: { id } }));
+                if (pos !== null) apply(pos);
+              };
+
+              ingest(url)
+                .then((result) => {
+                  settle((pos) => {
+                    const node = view.state.schema.nodes.image.create({
+                      src: result.src,
+                      alt: result.alt ?? '',
+                    });
+                    featureInsertNode(editor, node, pos);
+                  });
+                  onEvent?.({ status: 'ingested', url, source: 'link' });
+                })
+                .catch(() => {
+                  // Plain (untagged) insert: tracked while suggesting, like typing.
+                  settle((pos) => view.dispatch(view.state.tr.insertText(url, pos)));
+                  onEvent?.({ status: 'rejected', url, source: 'link' });
+                });
+              return true;
+            },
           },
         }),
       ];
@@ -183,6 +337,8 @@ function selectedImagePos(editor: Editor): number {
 export interface ImageUploadFeatureLabels {
   insertImage: string;
   removeImage: string;
+  /** Placeholder shown while a pasted image link is being imported. */
+  importingImage: string;
 }
 
 export interface ImageUploadFeatureOptions {
@@ -196,23 +352,47 @@ export interface ImageUploadFeatureOptions {
    * on paste instead — they are never kept as hotlinks either way.
    */
   ingestUrl?: EditorUrlIngestHandler | null;
-  /** Notified whenever an external image is ingested / rejected / stripped. */
+  /** Notified whenever an external image or pasted image link is ingested / rejected / stripped. */
   onImagePaste?: (event: ImagePasteEvent) => void;
+  /**
+   * Pasting a bare image or cloud-storage link (e.g. `https://…/photo.png`,
+   * a Google Drive / OneDrive / Dropbox share link) imports it through
+   * `ingestUrl` and inserts the image; if ingestion fails, the URL is pasted
+   * as plain text. Default `true` (using `isLikelyImageLink`) — pass your own
+   * predicate to decide which links to try, or `false` to always paste links
+   * as text. Has no effect without `ingestUrl`.
+   */
+  pasteImageLinks?: boolean | ((url: string) => boolean);
 }
 
 export function createImageUploadFeature(options: ImageUploadFeatureOptions = {}): EditorFeature {
   const labels: ImageUploadFeatureLabels = {
     insertImage: 'Insert image',
     removeImage: 'Remove image',
+    importingImage: 'Importing image\u2026',
     ...options.labels,
   };
   const accept = options.accept ?? 'image/*';
+  const ingestUrl = options.ingestUrl ?? null;
+  const pasteImageLinks = options.pasteImageLinks ?? true;
+  const linkMatcher =
+    typeof pasteImageLinks === 'function' ? pasteImageLinks : pasteImageLinks ? isLikelyImageLink : null;
 
   return {
     name: 'imageUpload',
     extensions: () => [
       TrackedImage,
-      createImageLocalizerExtension(options.ingestUrl ?? null, options.onImagePaste),
+      createImageLocalizerExtension(ingestUrl, options.onImagePaste),
+      ...(ingestUrl && linkMatcher
+        ? [
+            createImageLinkPasteExtension(
+              ingestUrl,
+              linkMatcher,
+              labels.importingImage,
+              options.onImagePaste,
+            ),
+          ]
+        : []),
     ],
     toolbarItems: () => [
       {

@@ -35,6 +35,7 @@ export {
   pickFile,
   createImageUploadFeature,
   TrackedImage,
+  isLikelyImageLink,
   createTableFeature,
   TrackedTable,
   TrackedTableRow,

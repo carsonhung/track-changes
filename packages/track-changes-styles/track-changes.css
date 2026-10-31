@@ -126,6 +126,29 @@ tr.tc-node-del > * {
   vertical-align: middle;
 }
 
+/* Placeholder while a pasted image link is being imported. */
+.tc-img-pending {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border: 1px dashed var(--tc-img-pending-border, rgba(0, 0, 0, 0.25));
+  border-radius: 0.35rem;
+  font-size: 0.8em;
+  color: var(--tc-img-pending-fg, rgba(0, 0, 0, 0.55));
+  animation: tc-img-pending-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes tc-img-pending-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tc-img-pending {
+    animation: none;
+  }
+}
+
 .tc-table {
   border-collapse: collapse;
   margin: 0.5rem 0;

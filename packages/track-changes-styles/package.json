@@ -1,6 +1,6 @@
 {
   "name": "track-changes-styles",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Screen + print CSS for track-changes ins/del rendering.",
   "license": "MIT",
   "repository": {

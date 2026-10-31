@@ -42,6 +42,7 @@ export {
 export {
   createImageUploadFeature,
   TrackedImage,
+  isLikelyImageLink,
   type ImageUploadFeatureOptions,
   type ImageUploadFeatureLabels,
   type ImagePasteEvent,

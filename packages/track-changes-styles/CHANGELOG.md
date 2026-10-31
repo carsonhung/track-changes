@@ -1,5 +1,11 @@
 # track-changes-styles
 
+## 0.7.0
+
+- `.tc-img-pending`: dashed, gently pulsing placeholder shown while a pasted
+  image link is imported (themable via `--tc-img-pending-border` /
+  `--tc-img-pending-fg`; animation off under `prefers-reduced-motion`).
+
 ## 0.6.1
 
 - `.tc-charcount-part--over`: per-part over-limit emphasis (bold + red) so a
