@@ -1,5 +1,5 @@
 {
-  "name": "@carsonhung/track-changes-styles",
+  "name": "track-changes-styles",
   "version": "0.6.1",
   "description": "Screen + print CSS for track-changes ins/del rendering.",
   "license": "MIT",
@@ -7,9 +7,6 @@
     "type": "git",
     "url": "https://github.com/carsonhung/track-changes.git",
     "directory": "packages/track-changes-styles"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
   },
   "exports": {
     "./track-changes.css": "./track-changes.css"

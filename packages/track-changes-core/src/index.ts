@@ -1,4 +1,4 @@
-// @carsonhung/track-changes-core — headless suggesting-mode engine (Phase 1).
+// track-changes-core — headless suggesting-mode engine (Phase 1).
 //
 // Keystone rule: every suggestion is document data (marks carrying
 // { id, authorId, ts }), never plugin state / decorations — so suggestions

@@ -6,7 +6,7 @@
 declare const __TC_VERSION__: string;
 
 /**
- * Semver of `@carsonhung/track-changes-core`, injected at build time.
+ * Semver of `track-changes-core`, injected at build time.
  * Reads `0.0.0-dev` when imported from source rather than the built bundle.
  */
 export const VERSION: string =

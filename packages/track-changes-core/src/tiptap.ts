@@ -30,7 +30,7 @@ import {
  *
  * The attribute renders to `data-suggestion` / `data-suggestion-type` /
  * `data-author` / `data-ts` plus a `tc-node-ins` / `tc-node-del` class, matching
- * `@carsonhung/track-changes-styles`.
+ * `track-changes-styles`.
  */
 export function suggestionNodeAttributes() {
   return {

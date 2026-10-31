@@ -1,4 +1,4 @@
-# @carsonhung/track-changes-core
+# track-changes-core
 
 ## 0.8.0
 

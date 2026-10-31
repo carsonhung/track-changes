@@ -6,7 +6,7 @@ import {
   suggestInsertNodes,
   suggestDeleteNode,
   suggestDeleteNodes,
-} from '@carsonhung/track-changes-core';
+} from 'track-changes-core';
 
 /**
  * Shared mutation helpers for feature plugins. Track-changes awareness lives

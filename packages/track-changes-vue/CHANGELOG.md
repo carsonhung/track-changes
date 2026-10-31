@@ -1,4 +1,4 @@
-# @carsonhung/track-changes-vue
+# track-changes-vue
 
 ## 0.11.2
 
@@ -122,7 +122,7 @@
   - Shared helpers `featureInsertNode` / `featureDeleteNode` (suggestion
     commands when suggesting, plain edits otherwise) and `pickFile` exported
     for custom features. All labels overridable for i18n via feature options.
-- Pair with `@carsonhung/track-changes-styles` ≥ 0.4.0 for the toolbar and
+- Pair with `track-changes-styles` ≥ 0.4.0 for the toolbar and
   feature-node styles.
 
 ## 0.4.1
@@ -130,7 +130,7 @@
 - Accept/reject transactions dispatched by `<TrackChangesEditor>` and
   `useTrackChangesReview` are now tagged with the core's `tagSuggestionTx`, so
   the new rewrite plugin (core 0.5.0) never re-encodes a resolution as a fresh
-  suggestion. Requires `@carsonhung/track-changes-core` ≥ 0.5.0.
+  suggestion. Requires `track-changes-core` ≥ 0.5.0.
 
 ## 0.4.0
 

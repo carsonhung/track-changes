@@ -5,9 +5,9 @@ editors, split into three MIT packages:
 
 | Package | What it is |
 |---|---|
-| [`@carsonhung/track-changes-core`](packages/track-changes-core) | Headless engine: insertion/deletion/format-change suggestions as **document data** (marks + node attributes), accept/reject, clean projections, rewrite plugin, lossless HTML codec. Framework-free. |
-| [`@carsonhung/track-changes-vue`](packages/track-changes-vue) | Vue 3 `<TrackChangesEditor>` on `@tiptap/vue-3`, with CKEditor-style feature plugins: formatting (schema-gated), image upload + external-image localization, tables. |
-| [`@carsonhung/track-changes-styles`](packages/track-changes-styles) | Screen + print CSS for `<ins>`/`<del>`/format-highlight rendering. Optional. |
+| [`track-changes-core`](packages/track-changes-core) | Headless engine: insertion/deletion/format-change suggestions as **document data** (marks + node attributes), accept/reject, clean projections, rewrite plugin, lossless HTML codec. Framework-free. |
+| [`track-changes-vue`](packages/track-changes-vue) | Vue 3 `<TrackChangesEditor>` on `@tiptap/vue-3`, with CKEditor-style feature plugins: formatting (schema-gated), image upload + external-image localization, tables. |
+| [`track-changes-styles`](packages/track-changes-styles) | Screen + print CSS for `<ins>`/`<del>`/format-highlight rendering. Optional. |
 
 Built only on the MIT open-source tier of Tiptap/ProseMirror — no commercial
 license required.
@@ -27,15 +27,15 @@ plugin state. So suggestions:
 ## Quick start
 
 ```bash
-npm i @carsonhung/track-changes-vue @carsonhung/track-changes-core \
+npm i track-changes-vue track-changes-core \
       @tiptap/core @tiptap/starter-kit @tiptap/vue-3 vue
 ```
 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { TrackChangesEditor, createFormattingFeature } from '@carsonhung/track-changes-vue'
-import '@carsonhung/track-changes-styles/track-changes.css'
+import { TrackChangesEditor, createFormattingFeature } from 'track-changes-vue'
+import 'track-changes-styles/track-changes.css'
 
 const html = ref('<p>Hello</p>')
 </script>

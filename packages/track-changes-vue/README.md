@@ -1,6 +1,6 @@
-# @carsonhung/track-changes-vue
+# track-changes-vue
 
-Vue 3 adapter for [`@carsonhung/track-changes-core`](../track-changes-core):
+Vue 3 adapter for [`track-changes-core`](../track-changes-core):
 a `<TrackChangesEditor>` component built on `@tiptap/vue-3` with
 CKEditor-style **feature plugins** (formatting, image upload, tables) and
 Word-style **tracked changes** (suggesting mode).
@@ -14,12 +14,12 @@ tier — no Tiptap Pro / commercial license is required.
 +--------------------------▲-----------------------------------+
                            │ props + handlers (this contract)
 +--------------------------┴-----------------------------------+
-| @carsonhung/track-changes-vue   <TrackChangesEditor>        |
+| track-changes-vue   <TrackChangesEditor>                     |
 |   feature plugins: formatting / imageUpload / table          |
 +--------------------------▲-----------------------------------+
                            │
 +--------------------------┴-----------------------------------+
-| @carsonhung/track-changes-core  (headless engine, PM/Tiptap)|
+| track-changes-core  (headless engine, PM/Tiptap)            |
 +--------------------------------------------------------------+
 ```
 
@@ -29,14 +29,14 @@ The package ships compiled ESM/CJS + types. Peer dependencies (host-provided
 so there is exactly one copy of each):
 
 ```bash
-npm i @carsonhung/track-changes-vue @carsonhung/track-changes-core \
+npm i track-changes-vue track-changes-core \
       @tiptap/core @tiptap/starter-kit @tiptap/vue-3 vue
 ```
 
 Optional, for the default `<ins>`/`<del>`/format-highlight rendering:
 
 ```ts
-import '@carsonhung/track-changes-styles/track-changes.css'
+import 'track-changes-styles/track-changes.css'
 ```
 
 > **No environment variables.** This package reads no `.env`, no
@@ -55,8 +55,8 @@ import {
   createFormattingFeature,
   createImageUploadFeature,
   createTableFeature,
-} from '@carsonhung/track-changes-vue'
-import '@carsonhung/track-changes-styles/track-changes.css'
+} from 'track-changes-vue'
+import 'track-changes-styles/track-changes.css'
 
 const html = ref<string | null>('<p>Initial content</p>')
 

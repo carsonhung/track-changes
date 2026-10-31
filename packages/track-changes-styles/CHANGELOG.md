@@ -1,4 +1,4 @@
-# @carsonhung/track-changes-styles
+# track-changes-styles
 
 ## 0.6.1
 

@@ -15,5 +15,5 @@ export default defineConfig({
   // Single-source the runtime VERSION from package.json (no drift).
   define: { __TC_VERSION__: JSON.stringify(version) },
   // Host app owns Vue, Tiptap, ProseMirror, and the core package.
-  external: ['vue', /^@tiptap\//, /^prosemirror-/, '@carsonhung/track-changes-core'],
+  external: ['vue', /^@tiptap\//, /^prosemirror-/, 'track-changes-core'],
 });

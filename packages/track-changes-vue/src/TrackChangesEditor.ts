@@ -31,7 +31,7 @@ import {
   tagSuggestionTx,
   docToHtml,
   type SuggestionSummary,
-} from '@carsonhung/track-changes-core';
+} from 'track-changes-core';
 
 export type EditorMode = 'editing' | 'suggesting' | 'viewing';
 

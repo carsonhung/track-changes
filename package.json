@@ -11,8 +11,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@carsonhung/track-changes-core && npm run build --workspace=@carsonhung/track-changes-vue",
-    "test": "npm run test --workspace=@carsonhung/track-changes-core",
+    "build": "npm run build --workspace=track-changes-core && npm run build --workspace=track-changes-vue",
+    "test": "npm run test --workspace=track-changes-core",
     "lint": "npm run lint --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present"
   }
