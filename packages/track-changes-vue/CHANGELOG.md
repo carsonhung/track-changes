@@ -2,13 +2,14 @@
 
 ## 0.12.1
 
+- **License is now Apache 2.0** (was MIT). Earlier versions remain MIT.
 - Fix: content hydrated after mount in `suggesting` mode was recorded as one
   large insertion. Hydration now uses core's `replaceEditorContent`
   (untracked, not undoable).
 
 ## 0.12.0
 
-- **Requires `track-changes-core` â‰¥ 0.9.0.** Feature plugins and editor glue
+- **Requires `track-changes-core` ? 0.9.0.** Feature plugins and editor glue
   now live in the core and are shared with the new `track-changes-react` and
   `track-changes-vanilla` adapters. Every previous export is still
   re-exported from this package, so existing imports keep working; props,
@@ -42,7 +43,7 @@
   `featureDeleteNodes` helpers for custom features.
 - **Character/word count footer.** New `maxCharacters` (soft cap) and
   `showCharacterCount` props on `<TrackChangesEditor>`: a footer shows the
-  clean-projection count (`countCleanText` â€” pending deletions stop counting
+  clean-projection count (`countCleanText` ¡X pending deletions stop counting
   immediately, pending insertions count right away) and flags the over-limit
   state via `.tc-charcount--over`. Input is never hard-blocked (in suggesting
   mode tracked text physically stays in the doc); enforce at submit time via
@@ -52,7 +53,7 @@
 
 - **Link feature (`createLinkFeature`).** Dependency-free `link` mark
   (`<a href>` with enforced `rel="noopener noreferrer nofollow"`; only
-  `http(s)`/`mailto` hrefs parse â€” pasted `javascript:`/`data:` links are
+  `http(s)`/`mailto` hrefs parse ¡X pasted `javascript:`/`data:` links are
   rejected at the schema level). "Set link" prompts for a URL
   (host-overridable via `promptUrl` for a proper dialog) and normalizes
   scheme-less input to `https://`; "Remove link" unsets across the mark
@@ -68,7 +69,7 @@
   document: a doc-scan reconciler plugin (also catches drag-and-drop and
   programmatic inserts) either localizes them through a new host hook or
   strips them.
-  - `createImageUploadFeature({ ingestUrl })` â€” a host-provided
+  - `createImageUploadFeature({ ingestUrl })` ¡X a host-provided
     `EditorUrlIngestHandler` (`(url) => Promise<EditorUploadResult>`) that
     takes a copy of the remote image (typically via a server-side fetch
     endpoint; browser fetch dies on CORS for most hosts) and resolves with the
@@ -88,13 +89,13 @@
   code block, horizontal rule); a new `EditorFeature.starterKitOptions()` hook
   lets features re-enable pieces, and `createFormattingFeature()` re-enables
   exactly what its `buttons` option renders. An editor without the formatting
-  feature therefore truly cannot be formatted â€” no Ctrl+B/I shortcut, no
+  feature therefore truly cannot be formatted ¡X no Ctrl+B/I shortcut, no
   markdown input rules, and pasted markup is stripped by the schema (the marks
   don't exist). Structure (paragraphs, hard breaks, history, cursors) stays on.
 
 ## 0.6.0
 
-- **P2f â€” formatting feature (`createFormattingFeature`).** Toolbar buttons
+- **P2f ¡X formatting feature (`createFormattingFeature`).** Toolbar buttons
   for bold / italic / strikethrough / heading 2-3 / bullet & numbered lists
   (all StarterKit, so the feature contributes no extensions). Buttons dispatch
   plain Tiptap toggle commands; in suggesting mode the core rewrite plugin
@@ -105,8 +106,8 @@
 - **HTML persistence format.** New `format: 'json' | 'html'` prop on
   `<TrackChangesEditor>` (default `'json'`, fully backward compatible). With
   `format="html"`, `update:modelValue` emits the document as an **HTML
-  string** â€” suggestions stay lossless as real `<ins>`/`<del>` tags and
-  `data-suggestion-*` attributes â€” so hosts can store rich text as plain text
+  string** ¡X suggestions stay lossless as real `<ins>`/`<del>` tags and
+  `data-suggestion-*` attributes ¡X so hosts can store rich text as plain text
   in a DB. The input side is format-agnostic: `modelValue` now accepts a PM
   JSON object **or** an HTML string regardless of `format`.
 - New imperative API: `getHTML()` (current tracked doc as HTML) and
@@ -115,28 +116,28 @@
 
 ## 0.5.0
 
-- **P2e â€” CKEditor-style editor feature plugins.** New `features/` layer: an
+- **P2e ¡X CKEditor-style editor feature plugins.** New `features/` layer: an
   `EditorFeature` is a self-contained bundle of Tiptap extensions + toolbar
-  items + host glue, composed via the new `features` prop â€” like CKEditor's
+  items + host glue, composed via the new `features` prop ¡X like CKEditor's
   `plugins: [...]` config:
   - `<TrackChangesEditor>` gains `features: EditorFeature[]` and
     `uploadHandler: (file) => Promise<{ src, alt? }>` props, and renders a
     built-in `.tc-toolbar` whenever features contribute items (auto-hidden in
     viewing/readonly state; items re-evaluate `isEnabled`/`isActive` on every
     editor transaction).
-  - `createImageUploadFeature(options?)` â€” registers a minimal inline atom
+  - `createImageUploadFeature(options?)` ¡X registers a minimal inline atom
     `image` node (`TrackedImage`, tracked via the core's marks) plus
-    "Insert image" (file picker â†’ host `uploadHandler` â†’ tracked insertion
+    "Insert image" (file picker ¡÷ host `uploadHandler` ¡÷ tracked insertion
     when suggesting) and selection-aware "Remove image" buttons. The package
-    owns no upload transport â€” the host decides where bytes go.
-  - `createTableFeature(options?)` â€” registers demo-grade `TrackedTable` /
+    owns no upload transport ¡X the host decides where bytes go.
+  - `createTableFeature(options?)` ¡X registers demo-grade `TrackedTable` /
     `TrackedTableRow` / `TrackedTableCell` nodes (row/cell wrapped with the
     core's `trackableNode()`) plus selection-aware insert-table / add-row /
-    delete-row buttons (delete keeps â‰¥ 1 row so the table stays schema-valid).
+    delete-row buttons (delete keeps ? 1 row so the table stays schema-valid).
   - Shared helpers `featureInsertNode` / `featureDeleteNode` (suggestion
     commands when suggesting, plain edits otherwise) and `pickFile` exported
     for custom features. All labels overridable for i18n via feature options.
-- Pair with `track-changes-styles` â‰¥ 0.4.0 for the toolbar and
+- Pair with `track-changes-styles` ? 0.4.0 for the toolbar and
   feature-node styles.
 
 ## 0.4.1
@@ -144,7 +145,7 @@
 - Accept/reject transactions dispatched by `<TrackChangesEditor>` and
   `useTrackChangesReview` are now tagged with the core's `tagSuggestionTx`, so
   the new rewrite plugin (core 0.5.0) never re-encodes a resolution as a fresh
-  suggestion. Requires `track-changes-core` â‰¥ 0.5.0.
+  suggestion. Requires `track-changes-core` ? 0.5.0.
 
 ## 0.4.0
 
@@ -157,7 +158,7 @@
 
 ## 0.3.0
 
-- Add `useTrackChangesReview(editorRef)` â€” a headless review composable that
+- Add `useTrackChangesReview(editorRef)` ¡X a headless review composable that
   returns a reactive `suggestions` list (auto-refreshed on every doc change)
   plus `accept` / `reject` / `acceptAll` / `rejectAll` / `getClean` helpers.
   Ships no markup (style-agnostic); the host renders its own review UI. Accept/

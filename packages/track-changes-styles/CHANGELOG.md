@@ -2,6 +2,7 @@
 
 ## 0.7.0
 
+- **License is now Apache 2.0** (was MIT). Earlier versions remain MIT.
 - `.tc-img-pending`: dashed, gently pulsing placeholder shown while a pasted
   image link is imported (themable via `--tc-img-pending-border` /
   `--tc-img-pending-fg`; animation off under `prefers-reduced-motion`).

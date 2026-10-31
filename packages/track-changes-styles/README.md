@@ -13,4 +13,4 @@ hosts can ship their own styles instead; the editor only requires that
 import 'track-changes-styles/track-changes.css'
 ```
 
-MIT licensed. See [CHANGELOG.md](./CHANGELOG.md).
+Apache 2.0 licensed. See [CHANGELOG.md](./CHANGELOG.md).

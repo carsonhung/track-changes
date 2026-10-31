@@ -12,7 +12,7 @@ unchanged. See the Vue README for the feature plugins, the pasted-image
 localization rules, and the host integration contract — all of it applies
 here as-is.
 
-MIT licensed; only the MIT open-source tier of Tiptap is used.
+Apache 2.0 licensed; only the MIT open-source tier of Tiptap is used.
 
 ## Install
 

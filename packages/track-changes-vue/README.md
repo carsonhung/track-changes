@@ -5,7 +5,7 @@ a `<TrackChangesEditor>` component built on `@tiptap/vue-3` with
 CKEditor-style **feature plugins** (formatting, image upload, tables) and
 Word-style **tracked changes** (suggesting mode).
 
-MIT licensed. Every Tiptap dependency used here is from the MIT open-source
+Apache 2.0 licensed. Every Tiptap dependency used here is from the MIT open-source
 tier — no Tiptap Pro / commercial license is required.
 
 ```

@@ -6,7 +6,7 @@ injected DOM for Node-side use), **no environment variables, no network IO**
 — it transforms documents and nothing else. UI adapters (e.g.
 [`track-changes-vue`](../track-changes-vue)) sit on top.
 
-MIT licensed; built only on MIT-tier Tiptap/ProseMirror packages.
+Apache 2.0 licensed; built only on MIT-tier Tiptap/ProseMirror packages.
 
 ## Keystone rule
 

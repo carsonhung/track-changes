@@ -2,6 +2,7 @@
 
 ## 0.1.1
 
+- **License is now Apache 2.0** (was MIT). Earlier versions remain MIT.
 - Fix: content hydrated after mount in `suggesting` mode was recorded as one
   large insertion. Hydration now uses core's `replaceEditorContent`
   (untracked, not undoable).

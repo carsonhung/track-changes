@@ -2,7 +2,7 @@
   "name": "track-changes-vue",
   "version": "0.12.1",
   "description": "Vue 3 adapter for track-changes-core: a thin <TrackChangesEditor> built on @tiptap/vue-3.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/carsonhung/track-changes.git",
@@ -29,7 +29,8 @@
   },
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "NOTICE"
   ],
   "scripts": {
     "build": "tsup",
@@ -38,17 +39,17 @@
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "peerDependencies": {
-    "track-changes-core": ">=0.9.0",
     "@tiptap/core": "^2.0.0",
     "@tiptap/starter-kit": "^2.0.0",
     "@tiptap/vue-3": "^2.0.0",
+    "track-changes-core": ">=0.9.0",
     "vue": "^3.4.0"
   },
   "devDependencies": {
-    "track-changes-core": "*",
     "@tiptap/core": "^2.11.0",
     "@tiptap/starter-kit": "^2.11.0",
     "@tiptap/vue-3": "^2.11.0",
+    "track-changes-core": "*",
     "tsup": "^8.3.0",
     "typescript": "~5.9.3",
     "vue": "^3.5.29"

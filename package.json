@@ -2,7 +2,7 @@
   "name": "track-changes-monorepo",
   "private": true,
   "description": "Track-changes (suggesting mode) packages for ProseMirror/Tiptap: headless core, Vue 3 / React / vanilla JS adapters, screen+print CSS.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/carsonhung/track-changes.git"

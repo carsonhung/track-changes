@@ -11,7 +11,7 @@ ready-made editors for **Vue**, **React**, and **plain JavaScript**.
 [![npm vue](https://img.shields.io/npm/v/track-changes-vue?label=vue)](https://www.npmjs.com/package/track-changes-vue)
 [![npm react](https://img.shields.io/npm/v/track-changes-react?label=react)](https://www.npmjs.com/package/track-changes-react)
 [![npm vanilla](https://img.shields.io/npm/v/track-changes-vanilla?label=vanilla)](https://www.npmjs.com/package/track-changes-vanilla)
-[![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![license: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 ### ▶ [Try the live demo](https://carsonhung.github.io/track-changes/)
 
@@ -25,8 +25,8 @@ suggestions.
 
 Track changes is usually a **paid add-on** for rich-text editors (CKEditor 5's
 Track Changes, for example, is a commercial feature). This project gives you
-the same workflow under the MIT license, on top of only the free tier of
-Tiptap/ProseMirror.
+the same workflow under the Apache 2.0 license, on top of only the free,
+MIT-licensed tier of Tiptap/ProseMirror.
 
 - ✍️ **Real suggesting mode.** Typing, deleting, pasting, formatting (bold,
   italic, headings, lists, links), images, table rows and columns are all
@@ -246,6 +246,6 @@ Each package is versioned independently. See its `CHANGELOG.md`.
 
 ## License
 
-[MIT](LICENSE). Free for commercial use. Originally built for report
-revisions at the Technology-Enriched Learning Initiative, The University of
-Hong Kong.
+[Apache License 2.0](LICENSE). Free for commercial use, with an explicit
+patent grant. See [NOTICE](NOTICE). Originally built for report revisions at
+the Technology-Enriched Learning Initiative, The University of Hong Kong.
