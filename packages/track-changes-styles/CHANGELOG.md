@@ -2,7 +2,7 @@
 
 ## 0.7.0
 
-- **License is now Apache 2.0** (was MIT). Earlier versions remain MIT.
+- **License is now AGPL-3.0, or a commercial license** (was MIT). Earlier versions remain MIT. See `COMMERCIAL-LICENSE.md`.
 - `.tc-img-pending`: dashed, gently pulsing placeholder shown while a pasted
   image link is imported (themable via `--tc-img-pending-border` /
   `--tc-img-pending-fg`; animation off under `prefers-reduced-motion`).

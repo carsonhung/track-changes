@@ -1,0 +1,45 @@
+name: Commercial license request
+description: Use track-changes in a closed-source or commercial product.
+title: "Commercial license: <company>"
+labels: ["commercial-license"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is **public**. Share only what you're comfortable publishing;
+        we'll continue the conversation privately.
+  - type: input
+    id: company
+    attributes:
+      label: Company or organization
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: How should we contact you privately?
+      description: For example, a work email address or a LinkedIn profile.
+    validations:
+      required: true
+  - type: dropdown
+    id: use
+    attributes:
+      label: How will you use track-changes?
+      options:
+        - SaaS / web application
+        - Internal tool
+        - Product distributed to customers
+        - Client project (agency)
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: packages
+    attributes:
+      label: Which packages?
+      multiple: true
+      options:
+        - track-changes-vue
+        - track-changes-react
+        - track-changes-vanilla
+        - track-changes-core only

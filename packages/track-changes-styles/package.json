@@ -2,7 +2,7 @@
   "name": "track-changes-styles",
   "version": "0.7.0",
   "description": "Screen + print CSS for track-changes ins/del rendering.",
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0-only OR LicenseRef-Commercial",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/carsonhung/track-changes.git",
@@ -13,6 +13,7 @@
   },
   "files": [
     "track-changes.css",
-    "NOTICE"
+    "NOTICE",
+    "COMMERCIAL-LICENSE.md"
   ]
 }

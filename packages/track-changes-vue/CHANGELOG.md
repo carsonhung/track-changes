@@ -2,7 +2,7 @@
 
 ## 0.12.1
 
-- **License is now Apache 2.0** (was MIT). Earlier versions remain MIT.
+- **License is now AGPL-3.0, or a commercial license** (was MIT). Earlier versions remain MIT. See `COMMERCIAL-LICENSE.md`.
 - Fix: content hydrated after mount in `suggesting` mode was recorded as one
   large insertion. Hydration now uses core's `replaceEditorContent`
   (untracked, not undoable).
@@ -43,7 +43,7 @@
   `featureDeleteNodes` helpers for custom features.
 - **Character/word count footer.** New `maxCharacters` (soft cap) and
   `showCharacterCount` props on `<TrackChangesEditor>`: a footer shows the
-  clean-projection count (`countCleanText` ¡X pending deletions stop counting
+  clean-projection count (`countCleanText` ?X pending deletions stop counting
   immediately, pending insertions count right away) and flags the over-limit
   state via `.tc-charcount--over`. Input is never hard-blocked (in suggesting
   mode tracked text physically stays in the doc); enforce at submit time via
@@ -53,7 +53,7 @@
 
 - **Link feature (`createLinkFeature`).** Dependency-free `link` mark
   (`<a href>` with enforced `rel="noopener noreferrer nofollow"`; only
-  `http(s)`/`mailto` hrefs parse ¡X pasted `javascript:`/`data:` links are
+  `http(s)`/`mailto` hrefs parse ?X pasted `javascript:`/`data:` links are
   rejected at the schema level). "Set link" prompts for a URL
   (host-overridable via `promptUrl` for a proper dialog) and normalizes
   scheme-less input to `https://`; "Remove link" unsets across the mark
@@ -69,7 +69,7 @@
   document: a doc-scan reconciler plugin (also catches drag-and-drop and
   programmatic inserts) either localizes them through a new host hook or
   strips them.
-  - `createImageUploadFeature({ ingestUrl })` ¡X a host-provided
+  - `createImageUploadFeature({ ingestUrl })` ?X a host-provided
     `EditorUrlIngestHandler` (`(url) => Promise<EditorUploadResult>`) that
     takes a copy of the remote image (typically via a server-side fetch
     endpoint; browser fetch dies on CORS for most hosts) and resolves with the
@@ -89,13 +89,13 @@
   code block, horizontal rule); a new `EditorFeature.starterKitOptions()` hook
   lets features re-enable pieces, and `createFormattingFeature()` re-enables
   exactly what its `buttons` option renders. An editor without the formatting
-  feature therefore truly cannot be formatted ¡X no Ctrl+B/I shortcut, no
+  feature therefore truly cannot be formatted ?X no Ctrl+B/I shortcut, no
   markdown input rules, and pasted markup is stripped by the schema (the marks
   don't exist). Structure (paragraphs, hard breaks, history, cursors) stays on.
 
 ## 0.6.0
 
-- **P2f ¡X formatting feature (`createFormattingFeature`).** Toolbar buttons
+- **P2f ?X formatting feature (`createFormattingFeature`).** Toolbar buttons
   for bold / italic / strikethrough / heading 2-3 / bullet & numbered lists
   (all StarterKit, so the feature contributes no extensions). Buttons dispatch
   plain Tiptap toggle commands; in suggesting mode the core rewrite plugin
@@ -106,8 +106,8 @@
 - **HTML persistence format.** New `format: 'json' | 'html'` prop on
   `<TrackChangesEditor>` (default `'json'`, fully backward compatible). With
   `format="html"`, `update:modelValue` emits the document as an **HTML
-  string** ¡X suggestions stay lossless as real `<ins>`/`<del>` tags and
-  `data-suggestion-*` attributes ¡X so hosts can store rich text as plain text
+  string** ?X suggestions stay lossless as real `<ins>`/`<del>` tags and
+  `data-suggestion-*` attributes ?X so hosts can store rich text as plain text
   in a DB. The input side is format-agnostic: `modelValue` now accepts a PM
   JSON object **or** an HTML string regardless of `format`.
 - New imperative API: `getHTML()` (current tracked doc as HTML) and
@@ -116,21 +116,21 @@
 
 ## 0.5.0
 
-- **P2e ¡X CKEditor-style editor feature plugins.** New `features/` layer: an
+- **P2e ?X CKEditor-style editor feature plugins.** New `features/` layer: an
   `EditorFeature` is a self-contained bundle of Tiptap extensions + toolbar
-  items + host glue, composed via the new `features` prop ¡X like CKEditor's
+  items + host glue, composed via the new `features` prop ?X like CKEditor's
   `plugins: [...]` config:
   - `<TrackChangesEditor>` gains `features: EditorFeature[]` and
     `uploadHandler: (file) => Promise<{ src, alt? }>` props, and renders a
     built-in `.tc-toolbar` whenever features contribute items (auto-hidden in
     viewing/readonly state; items re-evaluate `isEnabled`/`isActive` on every
     editor transaction).
-  - `createImageUploadFeature(options?)` ¡X registers a minimal inline atom
+  - `createImageUploadFeature(options?)` ?X registers a minimal inline atom
     `image` node (`TrackedImage`, tracked via the core's marks) plus
-    "Insert image" (file picker ¡÷ host `uploadHandler` ¡÷ tracked insertion
+    "Insert image" (file picker ?? host `uploadHandler` ?? tracked insertion
     when suggesting) and selection-aware "Remove image" buttons. The package
-    owns no upload transport ¡X the host decides where bytes go.
-  - `createTableFeature(options?)` ¡X registers demo-grade `TrackedTable` /
+    owns no upload transport ?X the host decides where bytes go.
+  - `createTableFeature(options?)` ?X registers demo-grade `TrackedTable` /
     `TrackedTableRow` / `TrackedTableCell` nodes (row/cell wrapped with the
     core's `trackableNode()`) plus selection-aware insert-table / add-row /
     delete-row buttons (delete keeps ? 1 row so the table stays schema-valid).
@@ -158,7 +158,7 @@
 
 ## 0.3.0
 
-- Add `useTrackChangesReview(editorRef)` ¡X a headless review composable that
+- Add `useTrackChangesReview(editorRef)` ?X a headless review composable that
   returns a reactive `suggestions` list (auto-refreshed on every doc change)
   plus `accept` / `reject` / `acceptAll` / `rejectAll` / `getClean` helpers.
   Ships no markup (style-agnostic); the host renders its own review UI. Accept/
