@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/carsonhung/track-changes.git",
+    "url": "git+https://github.com/carsonhung/track-changes.git",
     "directory": "packages/track-changes-vue"
   },
   "keywords": [
