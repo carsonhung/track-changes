@@ -1,12 +1,16 @@
+import type { Editor } from '@tiptap/core';
 import {
-  createTrackChangesEditor,
+  createEditorCommands,
+  createSuggestionReview,
   createFormattingFeature,
   createLinkFeature,
   createTableFeature,
   createImageUploadFeature,
   type EditorMode,
   type SuggestionSummary,
-} from 'track-changes-vanilla';
+} from 'track-changes-core';
+import type { EditorHost, Framework, HostOptions } from './hosts/types';
+import { FRAMEWORKS } from './snippets';
 import 'track-changes-styles/track-changes.css';
 import './demo.css';
 
@@ -15,7 +19,6 @@ const AUTHORS: Record<string, { name: string; color: string }> = {
   bob: { name: 'Bob', color: '#2563eb' },
 };
 
-// Declared before the editor: it reports suggestions while it is being created.
 const ICON_CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const ICON_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
@@ -55,33 +58,91 @@ function toast(message: string) {
 
 // The demo has no backend, so "your storage" is a data: URL. A real app
 // uploads to its bucket here and copies remote images server-side.
-const editor = createTrackChangesEditor($('#editor'), {
-  content: INITIAL,
-  format: 'html',
-  mode: 'suggesting',
-  authorId: 'alice',
-  maxWords: 150,
-  features: [
-    createFormattingFeature(),
-    createLinkFeature(),
-    createTableFeature(),
-    createImageUploadFeature({
-      ingestUrl: async (url) => {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        if (!res.ok || !blob.type.startsWith('image/')) throw new Error('not an image');
-        return { src: await readAsDataUrl(blob) };
-      },
-      onImagePaste: (e) => {
-        if (e.status === 'uploaded' || e.status === 'ingested') toast('Image copied into storage');
-        else if (e.source === 'link') toast('That link could not be imported in the browser, so it was pasted as text');
-        else toast('That image could not be imported');
-      },
-    }),
-  ],
-  uploadHandler: async (file) => ({ src: await readAsDataUrl(file), alt: file.name }),
-  onChange: () => renderOutput(),
-  onSuggestionsChange: (list) => renderSuggestions(list),
+const features = [
+  createFormattingFeature(),
+  createLinkFeature(),
+  createTableFeature(),
+  createImageUploadFeature({
+    ingestUrl: async (url) => {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      if (!res.ok || !blob.type.startsWith('image/')) throw new Error('not an image');
+      return { src: await readAsDataUrl(blob) };
+    },
+    onImagePaste: (e) => {
+      if (e.status === 'uploaded' || e.status === 'ingested') toast('Image copied into storage');
+      else if (e.source === 'link') toast('That link could not be imported in the browser, so it was pasted as text');
+      else toast('That image could not be imported');
+    },
+  }),
+];
+const uploadHandler = async (file: File) => ({ src: await readAsDataUrl(file), alt: file.name });
+
+// --- Editor (whichever framework is mounted) ---------------------------------
+
+let editor: Editor | null = null;
+let host: EditorHost | null = null;
+let mode: EditorMode = 'suggesting';
+let authorId = 'alice';
+
+const commands = createEditorCommands(() => editor);
+const review = createSuggestionReview((list) => renderSuggestions(list));
+
+const HOSTS: Record<Framework, () => Promise<{ mount: (el: HTMLElement, o: HostOptions) => EditorHost }>> = {
+  vanilla: () => import('./hosts/vanilla'),
+  vue: () => import('./hosts/vue'),
+  react: () => import('./hosts/react'),
+};
+
+let mountToken = 0;
+
+async function mountFramework(fw: Framework) {
+  const token = ++mountToken;
+  const content = commands.getHTML() ?? INITIAL;
+  const { mount } = await HOSTS[fw]();
+  if (token !== mountToken) return;
+
+  host?.destroy();
+  editor = null;
+  const el = $('#editor');
+  el.replaceChildren();
+  host = mount(el, {
+    content,
+    mode,
+    authorId,
+    features,
+    uploadHandler,
+    maxWords: 150,
+    onReady: (ed) => {
+      editor = ed;
+      review.bind(ed);
+      renderOutput();
+    },
+    onChange: () => renderOutput(),
+  });
+}
+
+// --- Framework switcher ------------------------------------------------------
+
+function isFramework(v: string): v is Framework {
+  return v in FRAMEWORKS;
+}
+
+function selectFramework(fw: Framework) {
+  const info = FRAMEWORKS[fw];
+  document.querySelectorAll<HTMLButtonElement>('[data-framework]').forEach((btn) => {
+    btn.setAttribute('aria-selected', String(btn.dataset.framework === fw));
+  });
+  $('#install-cmd').textContent = `npm i ${info.pkg}`;
+  $('#running-pkg').textContent = info.pkg;
+  $('#code-file').textContent = info.file;
+  $('#code').textContent = info.code;
+  history.replaceState(null, '', fw === 'vanilla' ? location.pathname : `#${fw}`);
+  void mountFramework(fw);
+}
+
+document.querySelectorAll<HTMLButtonElement>('[data-framework]').forEach((btn) => {
+  btn.addEventListener('click', () => selectFramework(btn.dataset.framework as Framework));
 });
 
 // --- Mode + author -----------------------------------------------------------
@@ -92,21 +153,22 @@ const MODE_HINTS: Record<EditorMode, string> = {
   viewing: 'Read-only. You can still accept or reject suggestions.',
 };
 
-function setMode(mode: EditorMode) {
-  editor.setMode(mode);
+function setMode(next: EditorMode) {
+  mode = next;
+  host?.setMode(next);
   document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((btn) => {
-    btn.setAttribute('aria-checked', String(btn.dataset.mode === mode));
+    btn.setAttribute('aria-checked', String(btn.dataset.mode === next));
   });
-  $('#mode-hint').textContent = MODE_HINTS[mode];
+  $('#mode-hint').textContent = MODE_HINTS[next];
 }
 
 document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach((btn) => {
   btn.addEventListener('click', () => setMode(btn.dataset.mode as EditorMode));
 });
-setMode('suggesting');
 
 $<HTMLSelectElement>('#author').addEventListener('change', (e) => {
-  editor.setAuthor((e.target as HTMLSelectElement).value);
+  authorId = (e.target as HTMLSelectElement).value;
+  host?.setAuthor(authorId);
 });
 
 // --- Review panel ------------------------------------------------------------
@@ -167,7 +229,7 @@ function renderSuggestions(list: SuggestionSummary[]) {
         body.append(quote);
       }
       body.addEventListener('click', () => {
-        editor.editor.chain().focus().setTextSelection({ from: s.from, to: s.to }).scrollIntoView().run();
+        editor?.chain().focus().setTextSelection({ from: s.from, to: s.to }).scrollIntoView().run();
       });
 
       const actions = document.createElement('span');
@@ -177,13 +239,13 @@ function renderSuggestions(list: SuggestionSummary[]) {
       accept.className = 'icon-btn icon-btn--accept';
       accept.innerHTML = ICON_CHECK;
       accept.setAttribute('aria-label', `Accept: ${describe(s)} by ${author.name}`);
-      accept.addEventListener('click', () => editor.accept(s.id));
+      accept.addEventListener('click', () => commands.accept(s.id));
       const reject = document.createElement('button');
       reject.type = 'button';
       reject.className = 'icon-btn icon-btn--reject';
       reject.innerHTML = ICON_X;
       reject.setAttribute('aria-label', `Reject: ${describe(s)} by ${author.name}`);
-      reject.addEventListener('click', () => editor.reject(s.id));
+      reject.addEventListener('click', () => commands.reject(s.id));
       actions.append(accept, reject);
 
       li.append(avatar, body, actions);
@@ -192,9 +254,8 @@ function renderSuggestions(list: SuggestionSummary[]) {
   );
 }
 
-$('#accept-all').addEventListener('click', () => editor.acceptAll());
-$('#reject-all').addEventListener('click', () => editor.rejectAll());
-renderSuggestions(editor.listSuggestions());
+$('#accept-all').addEventListener('click', () => commands.acceptAll());
+$('#reject-all').addEventListener('click', () => commands.rejectAll());
 
 // --- Stored HTML -------------------------------------------------------------
 
@@ -204,7 +265,7 @@ const pretty = (html: string) =>
   html.replace(/(<\/(?:p|h[1-6]|li|ul|ol|tr|tbody|table|blockquote)>)/g, '$1\n').trim();
 
 function renderOutput() {
-  const html = outputTab === 'tracked' ? editor.getHTML() : editor.getCleanHtml();
+  const html = outputTab === 'tracked' ? commands.getHTML() : commands.getCleanHtml();
   $('#output').textContent = pretty(html ?? '');
 }
 
@@ -216,15 +277,23 @@ for (const [id, tab] of [['#tab-tracked', 'tracked'], ['#tab-clean', 'clean']] a
     renderOutput();
   });
 }
-renderOutput();
 
-// --- Install command ---------------------------------------------------------
+// --- Copy buttons ------------------------------------------------------------
 
-$('#copy-install').addEventListener('click', async () => {
+async function copy(text: string, what: string) {
   try {
-    await navigator.clipboard.writeText($('#install-cmd').textContent ?? '');
-    toast('Install command copied');
+    await navigator.clipboard.writeText(text);
+    toast(`${what} copied`);
   } catch {
-    toast('Copy failed. Select the command and copy it manually');
+    toast('Copy failed. Select the text and copy it manually');
   }
-});
+}
+
+$('#copy-install').addEventListener('click', () => copy($('#install-cmd').textContent ?? '', 'Install command'));
+$('#copy-code').addEventListener('click', () => copy($('#code').textContent ?? '', 'Code'));
+
+// --- Start -------------------------------------------------------------------
+
+setMode(mode);
+const fromHash = location.hash.slice(1);
+selectFramework(isFramework(fromHash) ? fromHash : 'vanilla');

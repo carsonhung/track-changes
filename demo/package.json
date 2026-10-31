@@ -7,17 +7,27 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@tiptap/core": "^2.11.0",
     "@tiptap/pm": "^2.11.0",
+    "@tiptap/react": "^2.11.0",
     "@tiptap/starter-kit": "^2.11.0",
+    "@tiptap/vue-3": "^2.11.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "track-changes-core": "*",
+    "track-changes-react": "*",
     "track-changes-styles": "*",
-    "track-changes-vanilla": "*"
+    "track-changes-vanilla": "*",
+    "track-changes-vue": "*",
+    "vue": "^3.4.0"
   },
   "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "typescript": "~5.9.3",
     "vite": "^6.0.0"
   }

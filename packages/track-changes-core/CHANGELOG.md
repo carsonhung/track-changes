@@ -36,6 +36,9 @@
   External hydration / `setContent` went through the rewrite plugin. New
   `replaceEditorContent(editor, content)` loads a document as-is (untracked,
   no update event, not undoable); all three adapters use it.
+- **Fix: typing over a select-all left an empty paragraph after reject.** The
+  insertion now goes at the end of the last textblock instead of into a new
+  block.
 - `ImagePasteEvent` gains `source: 'image' | 'link' | 'file'` and an
   `uploaded` status. New `setEditorUploadHandler` / `getEditorUploadHandler`
   let feature plugins reach the editor's upload handler (the adapters

@@ -133,10 +133,14 @@ function insertSuggestion(
 
   if (from < to) markRangeDeleted(tr, from, to, insType, delType, authorId);
 
-  // Marking is size-stable, so `to` is still the correct insertion point.
-  const attrs = insertionAttrsAt(state, to, authorId);
-  tr.insert(to, state.schema.text(text, [insType.create(attrs)]));
-  const caret = to + text.length;
+  // Marking is size-stable, so `to` is still valid. A selection ending between
+  // blocks (select-all) must not insert a new paragraph that rejecting would
+  // leave behind empty, so step back into the last textblock.
+  const $to = tr.doc.resolve(to);
+  const at = $to.parent.inlineContent ? to : Selection.near($to, -1).from;
+  const attrs = insertionAttrsAt(state, at, authorId);
+  tr.insert(at, state.schema.text(text, [insType.create(attrs)]));
+  const caret = at + text.length;
   tr.setSelection(TextSelection.create(tr.doc, caret));
   if (dispatch) dispatch(tagSuggestionTx(tr.scrollIntoView()));
   return true;

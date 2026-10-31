@@ -48,6 +48,11 @@
           Every edit becomes a suggestion your reviewers can <em>accept</em> or <em>reject</em>.
           Built on Tiptap, for Vue, React, or plain JavaScript.
         </p>
+        <div class="framework-tabs" role="tablist" aria-label="Framework">
+          <button type="button" role="tab" data-framework="vanilla" aria-selected="true">Vanilla JS</button>
+          <button type="button" role="tab" data-framework="vue" aria-selected="false">Vue 3</button>
+          <button type="button" role="tab" data-framework="react" aria-selected="false">React</button>
+        </div>
         <div class="install">
           <code id="install-cmd">npm i track-changes-vanilla</code>
           <button type="button" class="icon-btn" id="copy-install" aria-label="Copy install command">
@@ -75,7 +80,10 @@
               </select>
             </label>
           </div>
-          <p class="mode-hint" id="mode-hint"></p>
+          <div class="doc-meta">
+            <p class="mode-hint" id="mode-hint"></p>
+            <p class="running">Running <a href="#code-title"><code id="running-pkg">track-changes-vanilla</code></a></p>
+          </div>
           <div class="paper" id="editor"></div>
           <ul class="tips" aria-label="Things to try">
             <li>Type or delete anything</li>
@@ -98,6 +106,26 @@
             No pending suggestions. Switch to <strong>Suggesting</strong> and edit the document.
           </p>
         </aside>
+      </section>
+
+      <section class="output" aria-labelledby="code-title">
+        <div class="output-head">
+          <h2 id="code-title">The code</h2>
+          <div class="code-file">
+            <code id="code-file">editor.ts</code>
+            <button type="button" class="icon-btn" id="copy-code" aria-label="Copy code">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="11" rx="2" />
+                <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="output-note">
+          The editor above is this package, mounted for real. Switch frameworks at the top: your edits
+          carry over.
+        </p>
+        <pre class="code-block" tabindex="0"><code id="code"></code></pre>
       </section>
 
       <section class="output" aria-labelledby="output-title">

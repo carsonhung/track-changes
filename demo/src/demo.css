@@ -189,6 +189,36 @@ main {
   font-weight: 600;
 }
 
+.framework-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0 auto 0.9rem;
+}
+
+.framework-tabs button {
+  min-height: 38px;
+  padding: 0 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.framework-tabs button:hover {
+  color: var(--fg);
+  border-color: var(--fg-muted);
+}
+
+.framework-tabs button[aria-selected='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
 .install {
   display: inline-flex;
   align-items: center;
@@ -283,10 +313,26 @@ main {
   font: inherit;
 }
 
-.mode-hint {
+.doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
   margin: 0.75rem 0;
+}
+
+.mode-hint,
+.running {
+  margin: 0;
   color: var(--fg-muted);
   font-size: 0.875rem;
+}
+
+.running code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent);
 }
 
 /* The document itself is light "paper": tracked-change colors read best on white. */
@@ -613,6 +659,22 @@ kbd {
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-all;
+}
+
+.output pre.code-block {
+  max-height: 520px;
+  white-space: pre;
+  word-break: normal;
+  color: #cbd5e1;
+}
+
+.code-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
 }
 
 /* --- Footer + toast ---------------------------------------------------------- */

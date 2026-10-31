@@ -19,7 +19,10 @@ ready-made editors for **Vue**, **React**, and **plain JavaScript**.
 
 Type, delete, bold something, or paste a screenshot, then accept or reject
 each change from the sidebar. Switch between Alice and Bob to see per-author
-suggestions.
+suggestions. The same demo runs on each adapter, with its source code
+alongside: [Vanilla JS](https://carsonhung.github.io/track-changes/) ·
+[Vue 3](https://carsonhung.github.io/track-changes/#vue) ·
+[React](https://carsonhung.github.io/track-changes/#react).
 
 ## Why track-changes?
 

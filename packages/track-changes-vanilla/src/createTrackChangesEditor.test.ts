@@ -106,6 +106,23 @@ describe('createTrackChangesEditor', () => {
     expect(h.listSuggestions()).toHaveLength(3);
   });
 
+  it('typing over a multi-paragraph selection keeps the old text as a deletion', () => {
+    const { handle: h } = mount({ content: '<p>First para</p><p>Second para</p>', authorId: 'bob' });
+    const { view } = h.editor;
+    h.editor.commands.selectAll();
+    const event = new KeyboardEvent('keypress', { key: 'X', bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'charCode', { value: 88 });
+    view.dom.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(h.listSuggestions().map((s) => [s.type, s.text])).toEqual([
+      ['deletion', 'First paraSecond para'],
+      ['insertion', 'X'],
+    ]);
+    h.rejectAll();
+    expect(h.editor.getText({ blockSeparator: '|' })).toBe('First para|Second para');
+  });
+
   it('returns the document in the requested format and removes its DOM on destroy', () => {
     const { target, handle: h } = mount({ content: '<p>x</p>', format: 'html' });
     expect(h.getValue()).toBe('<p>x</p>');
