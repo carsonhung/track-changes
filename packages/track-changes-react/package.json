@@ -1,6 +1,6 @@
 {
   "name": "track-changes-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React adapter for track-changes-core: a thin <TrackChangesEditor> built on @tiptap/react.",
   "license": "MIT",
   "repository": {

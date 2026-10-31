@@ -1,5 +1,11 @@
 # track-changes-react
 
+## 0.1.1
+
+- Fix: content hydrated after mount in `suggesting` mode was recorded as one
+  large insertion. Hydration now uses core's `replaceEditorContent`
+  (untracked, not undoable).
+
 ## 0.1.0
 
 - Initial release: React 18/19 `<TrackChangesEditor>` on `@tiptap/react`,

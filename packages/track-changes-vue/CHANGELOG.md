@@ -1,5 +1,11 @@
 # track-changes-vue
 
+## 0.12.1
+
+- Fix: content hydrated after mount in `suggesting` mode was recorded as one
+  large insertion. Hydration now uses core's `replaceEditorContent`
+  (untracked, not undoable).
+
 ## 0.12.0
 
 - **Requires `track-changes-core` ≥ 0.9.0.** Feature plugins and editor glue
