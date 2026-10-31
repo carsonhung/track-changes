@@ -16,6 +16,7 @@ import {
   setSuggestionAuthor,
   createModelHydrationGuard,
   createEditorCommands,
+  setEditorUploadHandler,
   resolveStarterKitOptions,
   featureExtensions,
   featureToolbarItems,
@@ -132,6 +133,7 @@ export default defineComponent({
       instance.on('transaction', () => {
         editorTick.value += 1;
       });
+      setEditorUploadHandler(instance, props.uploadHandler ?? null);
       editor.value = instance;
       emit('ready', instance);
     });
@@ -156,6 +158,13 @@ export default defineComponent({
     watch(
       () => props.readonly,
       (readonly) => editor.value?.setEditable(isEditorEditable(props.mode, readonly)),
+    );
+
+    watch(
+      () => props.uploadHandler,
+      (handler) => {
+        if (editor.value) setEditorUploadHandler(editor.value, handler ?? null);
+      },
     );
 
     watch(

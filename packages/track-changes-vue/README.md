@@ -126,9 +126,9 @@ Features are created per editor instance, so disabling a capability is just
   default URL input is `window.prompt`; pass `promptUrl(current, message)` to
   use your own dialog. In suggesting mode, setting/removing a link is recorded
   as a reviewable `format_change` suggestion.
-- `createImageUploadFeature({ labels?, accept?, ingestUrl?, onImagePaste?, pasteImageLinks? })`
-  — Insert/Remove image buttons (via `uploadHandler`), plus **external-image
-  localization** and **image-link paste**: see below.
+- `createImageUploadFeature({ labels?, accept?, ingestUrl?, localImageOrigins?, isLocalImageSrc?, onImagePaste?, pasteImageLinks?, uploadPastedFiles? })`
+  — Insert/Remove image buttons (via `uploadHandler`), and every pasted or
+  dropped image is copied into your storage: see below.
 - `createTableFeature({ labels?, rows?, cols?, withHeaderRow? })` — Insert
   table / Add row / Delete row / Add column / Delete column. New tables get a
   `<th>` header row by default. Row ops are tracked per row; column ops are
@@ -139,26 +139,47 @@ All labels are overridable for i18n. Custom features implement the
 `EditorFeature` interface (`extensions()`, `toolbarItems(ctx)`,
 `starterKitOptions()`).
 
-## Pasted "cloud images" (external-image localization)
+## Pasted and dropped images: always a copy in your storage
 
-Hotlinked `http(s)` images are a liability in archived documents (auth-gated
-cloud URLs expire, remote content can change after review). The image-upload
-feature therefore **never leaves an external image in an editable document**.
-A reconciler plugin scans the doc on load and on every update (so it also
-catches drag-and-drop and programmatic inserts):
+A document must never depend on someone else's file: if a pasted image
+still pointed at the original cloud file, the owner deleting, moving, or
+re-permissioning that file would break the image in your document (and the
+content could change after review). So the image feature makes sure every
+image ends up **as a copy in your own storage** (bucket, CDN, attachments
+API):
 
-| Host wiring | Behaviour on external `src` |
+| What the user pastes / drops | What happens |
 |---|---|
-| `ingestUrl` provided | Handler copies the image into host storage; the node's `src` is swapped to the returned local value. On rejection the image is removed. |
-| No `ingestUrl` | The image is stripped immediately. |
+| Image file (screenshot, copied file, drag-and-drop) | Uploaded via the editor's `uploadHandler` |
+| Bare image / cloud-share link | Copied via `ingestUrl` (see [Pasting a cloud link](#pasting-a-cloud-link)) |
+| Image inside copied web/doc content (`<img src="https://…">`) | Copied via `ingestUrl`; `src` swapped to your copy |
+| External image with no `ingestUrl` configured | Stripped — never kept as a hotlink |
 
-Either way `onImagePaste({ status: 'ingested' \| 'rejected' \| 'stripped', url, source: 'image' })`
-fires so the host can show a notice. Read-only views are never mutated, so
-legacy stored content still renders.
+The `<img>` case is enforced by a reconciler that scans the doc on load and
+on every update, so it also catches programmatic inserts. Read-only views
+are never mutated, so legacy stored content still renders.
+`onImagePaste({ status, url, source })` reports every outcome
+(`ingested` / `uploaded` / `rejected` / `stripped`; `source` is `image`,
+`link`, or `file`) so the host can show a notice.
 
-`ingestUrl` must resolve with a **local** `src` (relative path, `data:` URL,
-or anything not starting with `http(s)://`) — an absolute `http(s)` result
-is itself treated as external.
+### Storage on an `https://` origin (S3/GCS bucket, CDN)
+
+The editor decides what is "yours" by URL. Relative paths and `data:` URLs
+always are; **absolute `http(s)` URLs are not, unless you say so** — list
+your bucket/CDN origins, or every image you store would look external and
+be copied again:
+
+```ts
+createImageUploadFeature({
+  ingestUrl: (url) => api.ingestImage(url), // server downloads the bytes into the bucket
+  localImageOrigins: ['https://my-bucket.s3.ap-east-1.amazonaws.com', 'https://cdn.example.com'],
+  // or: isLocalImageSrc: (src) => src.startsWith('https://storage.googleapis.com/my-bucket/'),
+})
+```
+
+`uploadHandler` / `ingestUrl` must resolve with a src that passes this
+check; a result that doesn't is treated as a failed import (the editor
+won't loop copying it).
 
 ### Pasting a cloud link
 
@@ -175,7 +196,12 @@ iCloud, Imgur) inserts the image instead of the link text:
 
 `onImagePaste` fires with `source: 'link'`. Which links are tried is decided
 by `isLikelyImageLink(url)` (exported); pass `pasteImageLinks: (url) => …` to
-use your own rule, or `false` to always paste links as text.
+use your own rule, or `false` to always paste links as text. A pasted link
+that is already on one of your `localImageOrigins` is inserted directly.
+
+The backend behind `ingestUrl` must **download the bytes and store its own
+copy** — storing or proxying the original URL would bring back exactly the
+broken-image problem this feature exists to prevent.
 
 Share links usually point at a **viewer page**, not the file, so the backend
 endpoint behind `ingestUrl` should map them to direct downloads (e.g. Google

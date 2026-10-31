@@ -6,6 +6,7 @@ import {
   getTrackChangesState,
   createEditorCommands,
   createSuggestionReview,
+  setEditorUploadHandler,
   resolveStarterKitOptions,
   featureExtensions,
   featureToolbarItems,
@@ -118,6 +119,7 @@ export function createTrackChangesEditor(
     onUpdate: ({ editor: ed }) => options.onChange?.(serializeEditor(ed, format)),
   });
 
+  setEditorUploadHandler(editor, upload);
   const ctx = (): EditorFeatureContext => ({ editor, upload });
 
   // Buttons are built once and updated in place, so focus and hover survive
@@ -206,6 +208,7 @@ export function createTrackChangesEditor(
     },
     setUploadHandler: (handler) => {
       upload = handler;
+      setEditorUploadHandler(editor, handler);
       render();
     },
     getValue: () => serializeEditor(editor, format),

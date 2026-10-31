@@ -1,38 +1,63 @@
 # track-changes
 
-Word-style **tracked changes (suggesting mode)** for ProseMirror / Tiptap
-editors, split into MIT packages:
+**Word-style tracked changes for the web — free, open source, framework-agnostic.**
 
-| Package | What it is |
-|---|---|
-| [`track-changes-core`](packages/track-changes-core) | Headless engine: insertion/deletion/format-change suggestions as **document data** (marks + node attributes), accept/reject, clean projections, rewrite plugin, lossless HTML codec — plus the framework-agnostic editor kit and CKEditor-style feature plugins (formatting, link, image upload + external-image localization, tables) every adapter shares. |
-| [`track-changes-vue`](packages/track-changes-vue) | Vue 3 `<TrackChangesEditor>` on `@tiptap/vue-3`. |
-| [`track-changes-react`](packages/track-changes-react) | React 18/19 `<TrackChangesEditor>` on `@tiptap/react`. |
-| [`track-changes-vanilla`](packages/track-changes-vanilla) | No framework: `createTrackChangesEditor(element, options)`. |
-| [`track-changes-styles`](packages/track-changes-styles) | Screen + print CSS for `<ins>`/`<del>`/format-highlight rendering, toolbar, and counter. Optional. |
+Add "Suggesting mode" to any rich-text field: every edit becomes a
+suggestion your reviewers can **accept or reject**, just like Microsoft Word
+or Google Docs. Built on [Tiptap](https://tiptap.dev) / ProseMirror, with
+ready-made editors for **Vue**, **React**, and **plain JavaScript**.
 
-The three adapters render identical markup and share one implementation of
-modes, features, hydration, and review, so they behave the same and the same
-stylesheet applies to all of them.
+[![npm core](https://img.shields.io/npm/v/track-changes-core?label=track-changes-core)](https://www.npmjs.com/package/track-changes-core)
+[![npm vue](https://img.shields.io/npm/v/track-changes-vue?label=vue)](https://www.npmjs.com/package/track-changes-vue)
+[![npm react](https://img.shields.io/npm/v/track-changes-react?label=react)](https://www.npmjs.com/package/track-changes-react)
+[![npm vanilla](https://img.shields.io/npm/v/track-changes-vanilla?label=vanilla)](https://www.npmjs.com/package/track-changes-vanilla)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Built only on the MIT open-source tier of Tiptap/ProseMirror — no commercial
-license required.
+```
+ Before review                          After "Accept all"
+┌──────────────────────────────────┐    ┌──────────────────────────────────┐
+│ The project ~~will~~ ++has++     │ →  │ The project has finished phase   │
+│ finished phase one ++on time++.  │    │ one on time.                     │
+└──────────────────────────────────┘    └──────────────────────────────────┘
+   ++green++ = suggested insertion, ~~red~~ = suggested deletion
+```
 
-## Design keystone
+## Why track-changes?
 
-Every suggestion is **document data** — `<ins>`/`<del>` tags and
-`data-suggestion-*` attributes carrying `{ id, authorId, ts }` — never editor
-plugin state. So suggestions:
+Track changes is usually a **paid add-on** for rich-text editors (CKEditor 5's
+Track Changes, for example, is a commercial feature). This project gives you
+the same workflow under the MIT license, on top of only the free tier of
+Tiptap/ProseMirror.
 
-- persist losslessly in **plain HTML strings** (store rich text as a `TEXT`
-  column, no JSON blobs required)
-- render correctly in print / PDF without the editor
-- survive copy/paste and round-trip through any HTML pipeline
-- are collaboration-ready (the data travels with the document)
+- ✍️ **Real suggesting mode.** Typing, deleting, pasting, formatting (bold,
+  italic, headings, lists, links), images, table rows and columns are all
+  tracked, with the author and a timestamp on every change.
+- ✅ **Review built in.** Accept or reject one change, or all of them. Get a
+  live list of pending suggestions to build your own review sidebar.
+- 💾 **Store it as plain HTML.** Suggestions are ordinary `<ins>`/`<del>`
+  tags with `data-*` attributes, not hidden editor state. Save the HTML in a
+  `TEXT` column, reload it later, and the suggestions are still there.
+- 🖨️ **Prints correctly.** Because suggestions are real HTML, they render
+  in print and PDF without the editor (a print stylesheet is included).
+- 🧩 **Vue, React, or no framework.** Three thin adapters over one shared
+  engine, with the same features, the same behaviour, and the same CSS.
+- 🔒 **Locked-down fields.** Only the formatting you enable exists. A
+  plain-text field really is plain text, including keyboard shortcuts and
+  pasted content.
+- 🖼️ **Images that don't break.** Pasted screenshots, image links, and
+  Google Drive / OneDrive / Dropbox links are copied into *your* storage, so
+  a deleted original never breaks your document.
+- 🔢 **Word and character limits.** Soft limits based on the text as it
+  will read once accepted, with CJK-aware word counting.
+- 🪶 **Small and headless.** No backend, no environment variables, no
+  network calls. You provide the upload function; everything else runs in
+  the browser.
 
 ## Quick start
 
-### Vue
+Pick your framework. Every editor takes the same options.
+
+### Vue 3
 
 ```bash
 npm i track-changes-vue track-changes-core track-changes-styles \
@@ -59,7 +84,7 @@ const html = ref('<p>Hello</p>')
 </template>
 ```
 
-### React
+### React 18 / 19
 
 ```bash
 npm i track-changes-react track-changes-core track-changes-styles \
@@ -74,7 +99,7 @@ import 'track-changes-styles/track-changes.css'
 const features = [createFormattingFeature()]
 
 export function Field() {
-  const [html, setHtml] = useState<string>('<p>Hello</p>')
+  const [html, setHtml] = useState('<p>Hello</p>')
   return (
     <TrackChangesEditor
       value={html}
@@ -88,7 +113,7 @@ export function Field() {
 }
 ```
 
-### Vanilla JS
+### Plain JavaScript
 
 ```bash
 npm i track-changes-vanilla track-changes-core track-changes-styles \
@@ -107,33 +132,98 @@ const editor = createTrackChangesEditor(document.querySelector('#field')!, {
   features: [createFormattingFeature()],
   onChange: (html) => save(html),
 })
+
 editor.acceptAll()
 ```
 
-See each package's README for the full API, the host integration contract
-(uploads, external-image ingestion — **no environment variables in these
-packages**, all env config belongs to the consuming backend), and
-`docs/track-changes-architecture.md` for the architecture deep-dive
-(`docs/track-changes-rfc.md` for the original design rationale; both were
-written inside the host application this code was extracted from, so app
-references in them point at that project).
+## Reviewing changes
+
+Each adapter gives you the pending suggestions plus accept/reject actions,
+so you can build a review panel in a few lines:
+
+```tsx
+const review = useTrackChangesReview(editor) // Vue composable / React hook
+
+review.suggestions.map((s) => (
+  <li key={s.id}>
+    {s.authorId} {s.type === 'insertion' ? 'added' : s.type === 'deletion' ? 'removed' : 'formatted'}
+    “{s.text}”
+    <button onClick={() => review.accept(s.id)}>Accept</button>
+    <button onClick={() => review.reject(s.id)}>Reject</button>
+  </li>
+))
+```
+
+Need the final text? `getCleanHtml()` returns the document as it would read
+with every suggestion accepted, ready to publish or validate.
+
+## Editor modes
+
+| Mode | What happens |
+|---|---|
+| `suggesting` | Every edit is recorded as a tracked change. |
+| `editing` | Edits apply directly (for the document owner). |
+| `viewing` | Read-only. Changes can still be accepted or rejected from code. |
+
+## Feature plugins
+
+Turn on only what each field needs:
+
+| Feature | Adds |
+|---|---|
+| `createFormattingFeature()` | Bold, italic, strikethrough, headings, bullet and numbered lists (tracked as format changes) |
+| `createLinkFeature()` | Safe links (`http`, `https`, `mailto` only); setting or removing a link is tracked |
+| `createImageUploadFeature()` | Insert/remove images; pasted and dropped images and image links are copied into your storage |
+| `createTableFeature()` | Tables with a header row; adding or deleting a row or column is tracked as one change |
+
+You can also write your own feature: a feature is just Tiptap extensions plus
+toolbar buttons.
+
+## Packages
+
+| Package | Use it for |
+|---|---|
+| [`track-changes-core`](packages/track-changes-core) | The engine: suggestion model, accept/reject, HTML codec, and feature plugins. Framework-free. |
+| [`track-changes-vue`](packages/track-changes-vue) | `<TrackChangesEditor>` for Vue 3 |
+| [`track-changes-react`](packages/track-changes-react) | `<TrackChangesEditor>` for React 18/19 |
+| [`track-changes-vanilla`](packages/track-changes-vanilla) | `createTrackChangesEditor()` with no framework |
+| [`track-changes-styles`](packages/track-changes-styles) | Optional screen and print CSS, themable with CSS variables |
+
+Each package README has the full API. The [Vue README](packages/track-changes-vue/README.md)
+covers the shared details: feature options, image storage, and the backend
+contract for uploads.
+
+## How it works
+
+Every suggestion lives **inside the document** as `<ins>`/`<del>` tags and
+`data-suggestion-*` attributes carrying `{ id, authorId, ts }`, never in
+editor-only state. That one decision is why suggestions survive saving,
+copy/paste, printing, and any HTML pipeline, and why they're ready for
+real-time collaboration (Yjs) without a redesign.
+
+Read more in the [architecture notes](docs/track-changes-architecture.md).
+
+## Roadmap
+
+- Real-time collaboration (Yjs + Hocuspocus)
+- Comment threads on suggestions
+- Icon toolbar theme
+
+Ideas and pull requests are welcome. Please open an issue first for larger changes.
 
 ## Development
 
 ```bash
-npm install        # workspace install
-npm run build      # builds core, then the vue/react/vanilla adapters
-npm run test       # core suite (vitest golden files) + react/vanilla adapter tests
-npm run lint       # tsc --noEmit across packages
+npm install        # install the workspace
+npm run build      # build core, then the vue/react/vanilla adapters
+npm run test       # core suite + react/vanilla adapter tests
+npm run lint       # type-check every package
 ```
 
-Versioning is independent semver per package — see each `CHANGELOG.md`.
-
-## Provenance
-
-Extracted (with full history) from the TDG Reports platform monorepo, where
-these packages power tracked revisions on report resubmissions.
+Each package is versioned independently. See its `CHANGELOG.md`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[MIT](LICENSE). Free for commercial use. Originally built for report
+revisions at the Technology-Enriched Learning Initiative, The University of
+Hong Kong.

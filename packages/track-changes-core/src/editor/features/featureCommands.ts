@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
+import type { EditorUploadHandler } from './types';
 import { isSuggesting } from '../../state';
 import {
   suggestInsertNode,
@@ -73,6 +74,22 @@ export function featureDeleteNode(editor: Editor, pos: number): void {
   const node = editor.state.doc.nodeAt(pos);
   if (!node) return;
   editor.view.dispatch(editor.state.tr.delete(pos, pos + node.nodeSize).scrollIntoView());
+}
+
+const uploadHandlers = new WeakMap<Editor, EditorUploadHandler | null>();
+
+/**
+ * Register the host upload handler for an editor. Adapters call this on
+ * mount and whenever the handler changes, so feature *plugins* (paste/drop
+ * handlers, which have no toolbar context) can reach the same handler.
+ */
+export function setEditorUploadHandler(editor: Editor, handler: EditorUploadHandler | null): void {
+  uploadHandlers.set(editor, handler);
+}
+
+/** The host upload handler registered for `editor`, or null. */
+export function getEditorUploadHandler(editor: Editor): EditorUploadHandler | null {
+  return uploadHandlers.get(editor) ?? null;
 }
 
 /** Open the browser file picker; resolves null if the user cancels silently. */

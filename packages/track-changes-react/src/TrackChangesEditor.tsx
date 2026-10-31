@@ -15,6 +15,7 @@ import {
   getTrackChangesState,
   createModelHydrationGuard,
   createEditorCommands,
+  setEditorUploadHandler,
   resolveStarterKitOptions,
   featureExtensions,
   featureToolbarItems,
@@ -141,6 +142,10 @@ export const TrackChangesEditor = forwardRef<TrackChangesEditorRef, TrackChanges
         commands.setSuggesting(mode === 'suggesting');
       }
     }, [editor, commands, mode, readonly]);
+
+    useEffect(() => {
+      if (editor) setEditorUploadHandler(editor, uploadHandler);
+    }, [editor, uploadHandler]);
 
     useEffect(() => {
       if (!editor || getTrackChangesState(editor.state).authorId === authorId) return;

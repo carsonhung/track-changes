@@ -37,6 +37,8 @@ export {
   featureInsertNodes,
   featureDeleteNode,
   featureDeleteNodes,
+  setEditorUploadHandler,
+  getEditorUploadHandler,
   pickFile,
 } from './features/featureCommands';
 export {
