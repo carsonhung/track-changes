@@ -1,12 +1,12 @@
-import type { Editor } from '@tiptap/vue-3';
+import type { Editor } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
+import { isSuggesting } from '../../state';
 import {
-  isSuggesting,
   suggestInsertNode,
   suggestInsertNodes,
   suggestDeleteNode,
   suggestDeleteNodes,
-} from 'track-changes-core';
+} from '../../commands';
 
 /**
  * Shared mutation helpers for feature plugins. Track-changes awareness lives

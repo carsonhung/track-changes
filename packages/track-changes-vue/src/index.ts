@@ -5,6 +5,8 @@ export type { SuggestionSummary } from 'track-changes-core';
 export { useTrackChangesReview } from './useTrackChangesReview';
 export type { UseTrackChangesReview, TrackChangesEditorLike } from './useTrackChangesReview';
 
+// Feature plugins live in the framework-agnostic core (shared with the React
+// and vanilla adapters); re-exported so existing imports keep working.
 export type {
   EditorFeature,
   EditorFeatureContext,
@@ -12,36 +14,32 @@ export type {
   EditorUploadHandler,
   EditorUploadResult,
   EditorUrlIngestHandler,
-} from './features/types';
-export { featureInsertNode, featureDeleteNode, pickFile } from './features/featureCommands';
+  ImageUploadFeatureOptions,
+  ImageUploadFeatureLabels,
+  ImagePasteEvent,
+  ImagePasteStatus,
+  TableFeatureOptions,
+  TableFeatureLabels,
+  FormattingFeatureOptions,
+  FormattingFeatureLabels,
+  LinkFeatureOptions,
+  LinkFeatureLabels,
+} from 'track-changes-core';
 export {
+  featureInsertNode,
+  featureDeleteNode,
+  pickFile,
   createImageUploadFeature,
   TrackedImage,
-  type ImageUploadFeatureOptions,
-  type ImageUploadFeatureLabels,
-  type ImagePasteEvent,
-  type ImagePasteStatus,
-} from './features/imageUpload';
-export {
   createTableFeature,
   TrackedTable,
   TrackedTableRow,
   TrackedTableCell,
   TrackedTableHeaderCell,
-  type TableFeatureOptions,
-  type TableFeatureLabels,
-} from './features/table';
-export {
   createFormattingFeature,
-  type FormattingFeatureOptions,
-  type FormattingFeatureLabels,
-} from './features/formatting';
-export {
   createLinkFeature,
   TrackedLink,
   normalizeLinkHref,
-  type LinkFeatureOptions,
-  type LinkFeatureLabels,
-} from './features/link';
+} from 'track-changes-core';
 
 export { VERSION } from './version';

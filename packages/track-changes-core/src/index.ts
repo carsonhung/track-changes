@@ -101,4 +101,8 @@ export { withSuggestionMarks, createBasicSuggestionSchema, createExtendedSuggest
 export { docToHtml, htmlToDoc, htmlHasSuggestions } from './html';
 export type { HtmlCodecOptions } from './html';
 
+// Framework-agnostic editor kit + feature plugins, shared by the Vue, React,
+// and vanilla adapters (toolbar items are descriptors, not markup).
+export * from './editor';
+
 export { VERSION } from './version';

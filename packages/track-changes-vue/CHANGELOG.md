@@ -1,5 +1,13 @@
 # track-changes-vue
 
+## 0.12.0
+
+- **Requires `track-changes-core` ≥ 0.9.0.** Feature plugins and editor glue
+  now live in the core and are shared with the new `track-changes-react` and
+  `track-changes-vanilla` adapters. Every previous export is still
+  re-exported from this package, so existing imports keep working; props,
+  events, and rendered markup are unchanged.
+
 ## 0.11.2
 
 - **Late `modelValue` hydration.** When the host sets `modelValue` after the

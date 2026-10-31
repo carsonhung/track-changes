@@ -1,0 +1,63 @@
+{
+  "name": "track-changes-react",
+  "version": "0.1.0",
+  "description": "React adapter for track-changes-core: a thin <TrackChangesEditor> built on @tiptap/react.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carsonhung/track-changes.git",
+    "directory": "packages/track-changes-react"
+  },
+  "keywords": [
+    "react",
+    "tiptap",
+    "prosemirror",
+    "track-changes",
+    "suggesting",
+    "editor"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "peerDependencies": {
+    "track-changes-core": ">=0.9.0",
+    "@tiptap/core": "^2.0.0",
+    "@tiptap/react": "^2.0.0",
+    "@tiptap/starter-kit": "^2.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "track-changes-core": "*",
+    "@tiptap/core": "^2.11.0",
+    "@tiptap/react": "^2.11.0",
+    "@tiptap/starter-kit": "^2.11.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "happy-dom": "^20.10.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "~5.9.3",
+    "vitest": "^2.1.0"
+  }
+}

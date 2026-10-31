@@ -1,5 +1,20 @@
 # track-changes-core
 
+## 0.9.0
+
+- **Framework-agnostic editor kit + feature plugins.** The feature plugins
+  (`createFormattingFeature`, `createLinkFeature`, `createImageUploadFeature`,
+  `createTableFeature`, their `Tracked*` nodes/marks, and the
+  `featureInsertNode(s)` / `featureDeleteNode(s)` / `pickFile` helpers) moved
+  here from `track-changes-vue`, so the Vue, React, and vanilla adapters share
+  one implementation. New shared glue: `createEditorCommands` (the imperative
+  accept/reject/… API), `createSuggestionReview` (headless review controller),
+  `resolveStarterKitOptions`, `characterCountView`, `createModelHydrationGuard`,
+  and the `EditorMode` / `EditorFormat` types.
+- The formatting feature now dispatches Tiptap's generic `toggleMark` /
+  `toggleNode` / `toggleList` commands (what StarterKit's `toggleBold` etc.
+  wrap), so the core needs no StarterKit dependency. Behavior is unchanged.
+
 ## 0.8.0
 
 - **CJK-aware word counting.** `countCleanText` (and the new exported

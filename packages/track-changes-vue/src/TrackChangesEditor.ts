@@ -9,42 +9,32 @@ import {
   type PropType,
 } from 'vue';
 import { Editor, EditorContent, type Extensions } from '@tiptap/vue-3';
-import StarterKit, { type StarterKitOptions } from '@tiptap/starter-kit';
-import type { Node as PMNode } from '@tiptap/pm/model';
-import type { Transaction } from '@tiptap/pm/state';
+import StarterKit from '@tiptap/starter-kit';
 import type { TrackChangesEditorLike } from './useTrackChangesReview';
-import type { EditorFeature, EditorFeatureContext, EditorUploadHandler } from './features/types';
-import { createModelHydrationGuard, type EditorModelValue } from './modelHydration';
 import {
   createTrackChangesExtension,
-  setSuggesting,
   setSuggestionAuthor,
-  suggestInsertNode,
-  suggestDeleteNode,
-  acceptOn,
-  rejectOn,
-  acceptAllOn,
-  rejectAllOn,
-  listSuggestions,
-  toClean,
-  countCleanText,
-  tagSuggestionTx,
-  docToHtml,
-  type SuggestionSummary,
+  createModelHydrationGuard,
+  createEditorCommands,
+  resolveStarterKitOptions,
+  featureExtensions,
+  featureToolbarItems,
+  isEditorEditable,
+  isToolbarVisible,
+  serializeEditor,
+  isCharacterCountVisible,
+  characterCountView,
+  EMPTY_DOC,
+  type EditorFeature,
+  type EditorFeatureContext,
+  type EditorUploadHandler,
+  type EditorModelValue,
+  type EditorMode,
+  type EditorFormat,
+  type TrackChangesEditorCommands,
 } from 'track-changes-core';
 
-export type EditorMode = 'editing' | 'suggesting' | 'viewing';
-
-/**
- * Persistence format for `modelValue` / `update:modelValue`.
- *
- * - `json` — ProseMirror JSON document (object). Default, backward compatible.
- * - `html` — HTML string. Lossless: suggestions are real `<ins>`/`<del>` tags
- *   and `data-suggestion-*` attributes that round-trip through the schema's
- *   parse rules, so the value can be stored as plain text in a DB and renders
- *   correctly (including print/PDF) without the editor.
- */
-export type EditorFormat = 'json' | 'html';
+export type { EditorMode, EditorFormat };
 
 type Json = Record<string, unknown>;
 
@@ -52,48 +42,9 @@ type Json = Record<string, unknown>;
  * Imperative API exposed by `<TrackChangesEditor>` via a template ref. Vue
  * unwraps refs on the exposed instance, so `editor` reads as `Editor | null`.
  */
-export interface TrackChangesEditorApi extends TrackChangesEditorLike {
+export interface TrackChangesEditorApi extends TrackChangesEditorLike, TrackChangesEditorCommands {
   editor: Editor | null;
-  accept: (id: string) => void;
-  reject: (id: string) => void;
-  acceptAll: () => void;
-  rejectAll: () => void;
-  setSuggesting: (on: boolean) => void;
-  /** Insert a node (inline atom or trackable block) as a tracked insertion. */
-  insertNode: (node: PMNode, at?: number) => void;
-  /** Suggest deletion of the node at `pos` (keep it, mark it deleted). */
-  deleteNode: (pos: number) => void;
-  listSuggestions: () => SuggestionSummary[];
-  getClean: () => Json | null;
-  /** Current (tracked) document as an HTML string. */
-  getHTML: () => string | null;
-  /** Accept-all projection of the document as an HTML string. */
-  getCleanHtml: () => string | null;
 }
-
-const EMPTY_DOC: Json = { type: 'doc', content: [{ type: 'paragraph' }] };
-
-/**
- * Formatting-gated StarterKit pieces, disabled unless a feature re-enables
- * them via `EditorFeature.starterKitOptions` (the formatting feature does,
- * per its `buttons`). Disabling removes the mark/node from the schema, so the
- * restriction is real: no keyboard shortcut, no markdown input rule, and
- * pasted formatting is stripped on parse. Structure (paragraphs, hard breaks,
- * history, cursors) stays enabled always.
- */
-const RESTRICTED_STARTER_KIT: Partial<StarterKitOptions> = {
-  bold: false,
-  italic: false,
-  strike: false,
-  code: false,
-  heading: false,
-  bulletList: false,
-  orderedList: false,
-  listItem: false,
-  blockquote: false,
-  codeBlock: false,
-  horizontalRule: false,
-};
 
 /**
  * Thin Vue 3 adapter. Owns a Tiptap `Editor` with StarterKit + the
@@ -122,8 +73,8 @@ export default defineComponent({
      */
     extraExtensions: { type: Array as PropType<Extensions>, default: () => [] },
     /**
-     * CKEditor-style feature plugins (see `features/types.ts`). Each feature
-     * contributes Tiptap extensions plus toolbar items rendered by the
+     * CKEditor-style feature plugins (see `EditorFeature` in the core). Each
+     * feature contributes Tiptap extensions plus toolbar items rendered by the
      * built-in toolbar (hidden when no feature contributes items, or in
      * viewing/readonly state).
      */
@@ -139,18 +90,10 @@ export default defineComponent({
     /**
      * Soft character limit. When set, a footer shows the clean-projection
      * character/word count ("123 / 2,000") and turns into an over-limit state
-     * past the cap. The count is of the *accept-all projection*: a pending
-     * deletion stops counting immediately, a pending insertion counts right
-     * away. Input is never hard-blocked (in suggesting mode the tracked text
-     * physically stays in the doc, so blocking would be wrong) — enforce at
-     * submit/validation time via the same projection.
+     * past the cap. Never hard-blocks input — see `CharacterCountLimits`.
      */
     maxCharacters: { type: Number as PropType<number | null>, default: null },
-    /**
-     * Soft word limit (same clean-projection semantics as `maxCharacters`).
-     * Either cap alone or both together; the footer flags the over-limit
-     * state when any set cap is exceeded.
-     */
+    /** Soft word limit (same clean-projection semantics as `maxCharacters`). */
     maxWords: { type: Number as PropType<number | null>, default: null },
     /** Show the character/word footer even without a cap. */
     showCharacterCount: { type: Boolean, default: false },
@@ -165,29 +108,23 @@ export default defineComponent({
     // Bumped on every editor transaction so toolbar isEnabled/isActive re-evaluate.
     const editorTick = ref(0);
 
-    const isEditable = (mode: EditorMode, readonly: boolean) => !readonly && mode !== 'viewing';
-
     onMounted(() => {
-      const starterKitConfig = props.features.reduce<Partial<StarterKitOptions>>(
-        (cfg, f) => ({ ...cfg, ...(f.starterKitOptions?.() ?? {}) }),
-        { ...RESTRICTED_STARTER_KIT },
-      );
       const instance = new Editor({
         // Tiptap accepts both PM JSON and an HTML string as initial content,
         // so the input side is format-agnostic regardless of the `format` prop.
         content: props.modelValue || EMPTY_DOC,
-        editable: isEditable(props.mode, props.readonly),
+        editable: isEditorEditable(props.mode, props.readonly),
         extensions: [
-          StarterKit.configure(starterKitConfig),
+          StarterKit.configure(resolveStarterKitOptions(props.features)),
           createTrackChangesExtension({
             suggesting: props.mode === 'suggesting',
             authorId: props.authorId,
           }),
-          ...props.features.flatMap((f) => f.extensions?.() ?? []),
+          ...featureExtensions(props.features),
           ...props.extraExtensions,
         ],
         onUpdate: ({ editor: ed }) => {
-          const value = props.format === 'html' ? ed.getHTML() : (ed.getJSON() as Json);
+          const value = serializeEditor(ed, props.format);
           hydrationGuard.markLocalChange(value);
           emit('update:modelValue', value);
         },
@@ -204,40 +141,29 @@ export default defineComponent({
       editor.value = null;
     });
 
-    const applyTr = (mutate: (tr: Transaction) => void) => {
-      const ed = editor.value;
-      if (!ed) return;
-      const tr = ed.state.tr;
-      mutate(tr);
-      // Accept/reject transactions are already suggestion-resolved; tag them so
-      // the rewrite plugin doesn't re-encode them as new suggestions.
-      if (tr.docChanged || tr.steps.length) ed.view.dispatch(tagSuggestionTx(tr));
-    };
-
-    const dispatchCmd = (cmd: (state: Editor['state'], dispatch: (tr: Transaction) => void) => boolean) => {
-      const ed = editor.value;
-      if (!ed) return;
-      cmd(ed.state, (tr) => ed.view.dispatch(tr));
-    };
+    const commands = createEditorCommands(() => editor.value);
 
     watch(
       () => props.mode,
       (mode) => {
         const ed = editor.value;
         if (!ed) return;
-        ed.setEditable(isEditable(mode, props.readonly));
-        dispatchCmd(setSuggesting(mode === 'suggesting'));
+        ed.setEditable(isEditorEditable(mode, props.readonly));
+        commands.setSuggesting(mode === 'suggesting');
       },
     );
 
     watch(
       () => props.readonly,
-      (readonly) => editor.value?.setEditable(isEditable(props.mode, readonly)),
+      (readonly) => editor.value?.setEditable(isEditorEditable(props.mode, readonly)),
     );
 
     watch(
       () => props.authorId,
-      (authorId) => dispatchCmd(setSuggestionAuthor(authorId)),
+      (authorId) => {
+        const ed = editor.value;
+        if (ed) setSuggestionAuthor(authorId)(ed.state, (tr) => ed.view.dispatch(tr));
+      },
     );
 
     watch(
@@ -253,30 +179,11 @@ export default defineComponent({
       { deep: true },
     );
 
-    const api = {
-      editor,
-      accept: (id: string) => applyTr((tr) => acceptOn(tr, id)),
-      reject: (id: string) => applyTr((tr) => rejectOn(tr, id)),
-      acceptAll: () => applyTr((tr) => acceptAllOn(tr)),
-      rejectAll: () => applyTr((tr) => rejectAllOn(tr)),
-      setSuggesting: (on: boolean) => dispatchCmd(setSuggesting(on)),
-      /** Insert a node (atom or trackable block) as a tracked insertion. */
-      insertNode: (node: PMNode, at?: number) => dispatchCmd(suggestInsertNode(node, at)),
-      /** Suggest deletion of the node at `pos` (keep it, mark it deleted). */
-      deleteNode: (pos: number) => dispatchCmd(suggestDeleteNode(pos)),
-      listSuggestions: (): SuggestionSummary[] =>
-        editor.value ? listSuggestions(editor.value.state.doc) : [],
-      getClean: (): Json | null =>
-        editor.value ? (toClean(editor.value.state.doc).toJSON() as Json) : null,
-      getHTML: (): string | null => editor.value?.getHTML() ?? null,
-      getCleanHtml: (): string | null =>
-        editor.value ? docToHtml(toClean(editor.value.state.doc)) : null,
-    };
-    expose(api);
+    expose({ editor, ...commands });
 
     const renderToolbar = (ed: Editor) => {
-      if (props.readonly || props.mode === 'viewing') return null;
-      const items = props.features.flatMap((f) => f.toolbarItems?.() ?? []);
+      if (!isToolbarVisible(props.mode, props.readonly)) return null;
+      const items = featureToolbarItems(props.features);
       if (!items.length) return null;
       void editorTick.value; // subscribe: re-render on every editor transaction
       const ctx: EditorFeatureContext = { editor: ed, upload: props.uploadHandler ?? null };
@@ -302,38 +209,26 @@ export default defineComponent({
     };
 
     const renderCharacterCount = (ed: Editor) => {
-      if (props.maxCharacters == null && props.maxWords == null && !props.showCharacterCount) {
-        return null;
-      }
+      if (!isCharacterCountVisible(props)) return null;
       void editorTick.value; // subscribe: recount on every editor transaction
-      const { characters, words } = countCleanText(ed.state.doc);
-      const charsOver = props.maxCharacters != null && characters > props.maxCharacters;
-      const wordsOver = props.maxWords != null && words > props.maxWords;
-      const charText =
-        props.maxCharacters != null
-          ? `${characters.toLocaleString()} / ${props.maxCharacters.toLocaleString()}`
-          : characters.toLocaleString();
-      const wordText =
-        props.maxWords != null
-          ? `${words.toLocaleString()} / ${props.maxWords.toLocaleString()}w`
-          : `${words.toLocaleString()}w`;
+      const count = characterCountView(ed.state.doc, props);
       return h(
         'div',
         {
-          class: ['tc-charcount', { 'tc-charcount--over': charsOver || wordsOver }],
+          class: ['tc-charcount', { 'tc-charcount--over': count.over }],
           role: 'status',
           'aria-live': 'polite',
         },
         [
           h(
             'span',
-            { class: ['tc-charcount-chars', { 'tc-charcount-part--over': charsOver }] },
-            charText,
+            { class: ['tc-charcount-chars', { 'tc-charcount-part--over': count.charsOver }] },
+            count.charText,
           ),
           h(
             'span',
-            { class: ['tc-charcount-words', { 'tc-charcount-part--over': wordsOver }] },
-            ` · ${wordText}`,
+            { class: ['tc-charcount-words', { 'tc-charcount-part--over': count.wordsOver }] },
+            ` · ${count.wordText}`,
           ),
         ],
       );

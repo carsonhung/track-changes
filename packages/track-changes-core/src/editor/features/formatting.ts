@@ -1,4 +1,4 @@
-import type { Editor } from '@tiptap/vue-3';
+import type { Editor } from '@tiptap/core';
 import type { EditorFeature, EditorToolbarItem } from './types';
 
 /**
@@ -68,41 +68,43 @@ interface ButtonDef {
   run: (editor: Editor) => void;
 }
 
+// Generic core commands (what StarterKit's toggleBold/toggleHeading/… wrap),
+// so this module needs no StarterKit typings.
 const BUTTONS: Record<keyof FormattingFeatureLabels, ButtonDef> = {
   bold: {
     text: 'B',
     isActive: (ed) => ed.isActive('bold'),
-    run: (ed) => ed.chain().focus().toggleBold().run(),
+    run: (ed) => ed.chain().focus().toggleMark('bold').run(),
   },
   italic: {
     text: 'I',
     isActive: (ed) => ed.isActive('italic'),
-    run: (ed) => ed.chain().focus().toggleItalic().run(),
+    run: (ed) => ed.chain().focus().toggleMark('italic').run(),
   },
   strike: {
     text: 'S',
     isActive: (ed) => ed.isActive('strike'),
-    run: (ed) => ed.chain().focus().toggleStrike().run(),
+    run: (ed) => ed.chain().focus().toggleMark('strike').run(),
   },
   heading2: {
     text: 'H2',
     isActive: (ed) => ed.isActive('heading', { level: 2 }),
-    run: (ed) => ed.chain().focus().toggleHeading({ level: 2 }).run(),
+    run: (ed) => ed.chain().focus().toggleNode('heading', 'paragraph', { level: 2 }).run(),
   },
   heading3: {
     text: 'H3',
     isActive: (ed) => ed.isActive('heading', { level: 3 }),
-    run: (ed) => ed.chain().focus().toggleHeading({ level: 3 }).run(),
+    run: (ed) => ed.chain().focus().toggleNode('heading', 'paragraph', { level: 3 }).run(),
   },
   bulletList: {
     text: '\u2022',
     isActive: (ed) => ed.isActive('bulletList'),
-    run: (ed) => ed.chain().focus().toggleBulletList().run(),
+    run: (ed) => ed.chain().focus().toggleList('bulletList', 'listItem').run(),
   },
   orderedList: {
     text: '1.',
     isActive: (ed) => ed.isActive('orderedList'),
-    run: (ed) => ed.chain().focus().toggleOrderedList().run(),
+    run: (ed) => ed.chain().focus().toggleList('orderedList', 'listItem').run(),
   },
 };
 

@@ -5,7 +5,6 @@ import { createExtendedSuggestionSchema } from './schema';
 import { createSuggestingPlugins } from './plugin';
 import { tagSuggestionTx } from './rewrite';
 import { listSuggestions, toClean, toRejected, hasSuggestions, acceptOn, rejectOn } from './clean';
-import { FORMAT_CHANGE } from './formatChange';
 
 // Format-change suggestions (P2f) are produced by the rewrite plugin from
 // plain AddMarkStep / RemoveMarkStep transactions — the exact steps Tiptap's

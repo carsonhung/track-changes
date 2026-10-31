@@ -1,8 +1,8 @@
 import { Node, Extension, mergeAttributes } from '@tiptap/core';
 import { NodeSelection, Plugin, PluginKey } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
-import type { Editor } from '@tiptap/vue-3';
-import { tagSuggestionTx } from 'track-changes-core';
+import type { Editor } from '@tiptap/core';
+import { tagSuggestionTx } from '../../rewrite';
 import type { EditorFeature, EditorUrlIngestHandler } from './types';
 import { featureInsertNode, featureDeleteNode, pickFile } from './featureCommands';
 
@@ -20,7 +20,7 @@ import { featureInsertNode, featureDeleteNode, pickFile } from './featureCommand
  *   never left as hotlinks — see `createImageLocalizerExtension` below
  *
  * The package owns no upload transport: the host passes `uploadHandler` to
- * `<TrackChangesEditor>` (e.g. an attachments-API adapter or a data-URL stub).
+ * the editor (e.g. an attachments-API adapter or a data-URL stub).
  * The button is disabled when no handler is provided.
  */
 

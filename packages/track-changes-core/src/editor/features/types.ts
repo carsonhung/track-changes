@@ -1,11 +1,12 @@
 import type { AnyExtension } from '@tiptap/core';
-import type { Editor } from '@tiptap/vue-3';
+import type { Editor } from '@tiptap/core';
 
 /**
  * CKEditor-style editor features. A feature is a self-contained bundle of:
  *
  * - **engine** — the Tiptap extensions (nodes/marks/plugins) it needs
- * - **UI** — toolbar items rendered by `<TrackChangesEditor>`'s built-in toolbar
+ * - **UI** — toolbar items rendered by each adapter's built-in toolbar
+ *   (Vue/React `<TrackChangesEditor>`, vanilla `createTrackChangesEditor`)
  * - **platform glue** — host hooks it consumes from the feature context
  *   (currently `upload`, e.g. wired to an attachments API)
  *
@@ -67,7 +68,7 @@ export interface EditorFeature {
   toolbarItems?: () => EditorToolbarItem[];
   /**
    * StarterKit options this feature re-enables, shallow-merged over the
-   * editor's restrictive base config. `<TrackChangesEditor>` disables every
+   * editor's restrictive base config. Every adapter disables every
    * formatting-related StarterKit piece (bold, italic, strike, code, headings,
    * lists, blockquote, code block, horizontal rule) by default, so a field
    * without the formatting feature truly cannot be formatted — no toolbar

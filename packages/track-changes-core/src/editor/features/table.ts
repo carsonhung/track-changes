@@ -1,7 +1,7 @@
 import { Node, mergeAttributes } from '@tiptap/core';
-import type { Editor } from '@tiptap/vue-3';
+import type { Editor } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
-import { trackableNode } from 'track-changes-core';
+import { trackableNode } from '../../tiptap';
 import type { EditorFeature } from './types';
 import {
   featureInsertNode,
