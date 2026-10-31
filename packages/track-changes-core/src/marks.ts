@@ -5,6 +5,13 @@ export const INSERTION = 'insertion';
 export const DELETION = 'deletion';
 
 /**
+ * Parse priority for suggestion tags (ProseMirror's default is 50). Must beat
+ * formatting marks that claim the same tags — Tiptap's Strike parses every
+ * `<del>` — or stored deletions would reload as plain strikethrough.
+ */
+export const SUGGESTION_PARSE_PRIORITY = 100;
+
+/**
  * The two kinds of suggestion. Shared by both encodings — inline marks
  * (`marks.ts`) and the block/structural node attribute (`nodeAttrs.ts`) — so the
  * accept/reject engine treats them uniformly. Lives here to avoid an
@@ -36,7 +43,13 @@ function getAttrs(el: HTMLElement): SuggestionAttrs {
 export const insertionMarkSpec: MarkSpec = {
   attrs: { id: {}, authorId: { default: null }, ts: { default: null } },
   inclusive: true,
-  parseDOM: [{ tag: 'ins[data-suggestion]', getAttrs: (dom) => getAttrs(dom as HTMLElement) }],
+  parseDOM: [
+    {
+      tag: 'ins[data-suggestion]',
+      priority: SUGGESTION_PARSE_PRIORITY,
+      getAttrs: (dom) => getAttrs(dom as HTMLElement),
+    },
+  ],
   toDOM: (mark) => [
     'ins',
     {
@@ -53,7 +66,13 @@ export const insertionMarkSpec: MarkSpec = {
 export const deletionMarkSpec: MarkSpec = {
   attrs: { id: {}, authorId: { default: null }, ts: { default: null } },
   inclusive: false,
-  parseDOM: [{ tag: 'del[data-suggestion]', getAttrs: (dom) => getAttrs(dom as HTMLElement) }],
+  parseDOM: [
+    {
+      tag: 'del[data-suggestion]',
+      priority: SUGGESTION_PARSE_PRIORITY,
+      getAttrs: (dom) => getAttrs(dom as HTMLElement),
+    },
+  ],
   toDOM: (mark) => [
     'del',
     {

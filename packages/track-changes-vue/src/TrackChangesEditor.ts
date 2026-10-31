@@ -23,6 +23,7 @@ import {
   isEditorEditable,
   isToolbarVisible,
   serializeEditor,
+  replaceEditorContent,
   isCharacterCountVisible,
   characterCountView,
   EMPTY_DOC,
@@ -182,8 +183,7 @@ export default defineComponent({
         if (!ed || !hydrationGuard.shouldHydrate(modelValue as EditorModelValue)) return;
         // This path is only reachable before local editing, so replacing the
         // initial empty document cannot discard selection/history/suggestions.
-        // `emitUpdate: false` prevents a hydration feedback loop.
-        ed.commands.setContent(modelValue || EMPTY_DOC, false);
+        replaceEditorContent(ed, modelValue as Json | string | null);
       },
       { deep: true },
     );

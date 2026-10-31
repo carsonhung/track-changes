@@ -7,6 +7,7 @@ export {
   isEditorEditable,
   isToolbarVisible,
   serializeEditor,
+  replaceEditorContent,
   createEditorCommands,
   isCharacterCountVisible,
   characterCountView,

@@ -13,6 +13,7 @@ import {
   isEditorEditable,
   isToolbarVisible,
   serializeEditor,
+  replaceEditorContent,
   isCharacterCountVisible,
   characterCountView,
   EMPTY_DOC,
@@ -213,7 +214,7 @@ export function createTrackChangesEditor(
     },
     getValue: () => serializeEditor(editor, format),
     setContent: (next) => {
-      editor.commands.setContent(next || EMPTY_DOC, false);
+      replaceEditorContent(editor, next);
     },
     destroy: () => {
       review?.destroy();

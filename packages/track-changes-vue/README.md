@@ -30,7 +30,7 @@ so there is exactly one copy of each):
 
 ```bash
 npm i track-changes-vue track-changes-core \
-      @tiptap/core @tiptap/starter-kit @tiptap/vue-3 vue
+      @tiptap/core@^2 @tiptap/pm@^2 @tiptap/starter-kit@^2 @tiptap/vue-3@^2 vue
 ```
 
 Optional, for the default `<ins>`/`<del>`/format-highlight rendering:

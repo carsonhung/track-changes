@@ -22,6 +22,7 @@ import {
   isEditorEditable,
   isToolbarVisible,
   serializeEditor,
+  replaceEditorContent,
   isCharacterCountVisible,
   characterCountView,
   EMPTY_DOC,
@@ -156,8 +157,7 @@ export const TrackChangesEditor = forwardRef<TrackChangesEditorRef, TrackChanges
       if (!editor || !hydrationGuard.shouldHydrate(value)) return;
       // Only reachable before local editing, so replacing the initial empty
       // document cannot discard selection/history/suggestions.
-      // `emitUpdate: false` prevents a hydration feedback loop.
-      editor.commands.setContent(value || EMPTY_DOC, false);
+      replaceEditorContent(editor, value);
     }, [editor, hydrationGuard, value]);
 
     useImperativeHandle(ref, () => ({ editor, ...commands }), [editor, commands]);

@@ -1,0 +1,24 @@
+{
+  "name": "track-changes-demo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Live demo of track-changes, deployed to GitHub Pages.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tiptap/core": "^2.11.0",
+    "@tiptap/pm": "^2.11.0",
+    "@tiptap/starter-kit": "^2.11.0",
+    "track-changes-core": "*",
+    "track-changes-styles": "*",
+    "track-changes-vanilla": "*"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^6.0.0"
+  }
+}

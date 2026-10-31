@@ -1,4 +1,5 @@
 import type { Mark, MarkSpec, MarkType, Schema } from '@tiptap/pm/model';
+import { SUGGESTION_PARSE_PRIORITY } from './marks';
 
 /**
  * Format-change suggestions (P2f).
@@ -87,6 +88,7 @@ export const formatChangeMarkSpec: MarkSpec = {
   parseDOM: [
     {
       tag: 'span[data-suggestion-format]',
+      priority: SUGGESTION_PARSE_PRIORITY,
       getAttrs: (dom) => getAttrsFromDom(dom as HTMLElement),
     },
   ],

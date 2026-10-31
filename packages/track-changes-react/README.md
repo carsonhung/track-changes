@@ -18,7 +18,7 @@ MIT licensed; only the MIT open-source tier of Tiptap is used.
 
 ```bash
 npm i track-changes-react track-changes-core track-changes-styles \
-      @tiptap/core @tiptap/starter-kit @tiptap/react react react-dom
+      @tiptap/core@^2 @tiptap/pm@^2 @tiptap/starter-kit@^2 @tiptap/react@^2 react react-dom
 ```
 
 ## Quick start

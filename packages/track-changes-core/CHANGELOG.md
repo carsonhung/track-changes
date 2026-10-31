@@ -27,6 +27,14 @@
   `https://bucket…` URLs would be re-ingested (or stripped without
   `ingestUrl`). A storage result that still isn't local is now treated as a
   failed import instead of looping.
+- **Fix: stored deletions reloaded as strikethrough.** With formatting
+  enabled, StarterKit's Strike claimed `<del>` before the deletion mark, so a
+  saved deletion suggestion came back as plain struck-through text. Suggestion
+  parse rules now run at `SUGGESTION_PARSE_PRIORITY` (100, above the default 50).
+- **Fix: loading content in suggesting mode created a giant insertion.**
+  External hydration / `setContent` went through the rewrite plugin. New
+  `replaceEditorContent(editor, content)` loads a document as-is (untracked,
+  no update event, not undoable); all three adapters use it.
 - `ImagePasteEvent` gains `source: 'image' | 'link' | 'file'` and an
   `uploaded` status. New `setEditorUploadHandler` / `getEditorUploadHandler`
   let feature plugins reach the editor's upload handler (the adapters

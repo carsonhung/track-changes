@@ -17,7 +17,7 @@ MIT licensed; only the MIT open-source tier of Tiptap is used.
 
 ```bash
 npm i track-changes-vanilla track-changes-core track-changes-styles \
-      @tiptap/core @tiptap/pm @tiptap/starter-kit
+      @tiptap/core@^2 @tiptap/pm@^2 @tiptap/starter-kit@^2
 ```
 
 ## Quick start

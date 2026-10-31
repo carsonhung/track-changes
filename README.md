@@ -13,14 +13,13 @@ ready-made editors for **Vue**, **React**, and **plain JavaScript**.
 [![npm vanilla](https://img.shields.io/npm/v/track-changes-vanilla?label=vanilla)](https://www.npmjs.com/package/track-changes-vanilla)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-```
- Before review                          After "Accept all"
-┌──────────────────────────────────┐    ┌──────────────────────────────────┐
-│ The project ~~will~~ ++has++     │ →  │ The project has finished phase   │
-│ finished phase one ++on time++.  │    │ one on time.                     │
-└──────────────────────────────────┘    └──────────────────────────────────┘
-   ++green++ = suggested insertion, ~~red~~ = suggested deletion
-```
+### ▶ [Try the live demo](https://carsonhung.github.io/track-changes/)
+
+[![track-changes demo: a deletion, insertions and a bold suggestion from two authors](docs/demo.png)](https://carsonhung.github.io/track-changes/)
+
+Type, delete, bold something, or paste a screenshot, then accept or reject
+each change from the sidebar. Switch between Alice and Bob to see per-author
+suggestions.
 
 ## Why track-changes?
 
@@ -53,6 +52,25 @@ Tiptap/ProseMirror.
   network calls. You provide the upload function; everything else runs in
   the browser.
 
+## What it adds over plain Tiptap
+
+Tiptap and ProseMirror give you an excellent editor, but no review workflow.
+Every edit changes the document immediately. Here is what this project
+layers on top:
+
+| | Plain Tiptap / ProseMirror | With track-changes |
+|---|---|---|
+| Typing and deleting | Applied immediately | Recorded as insertions/deletions with author and timestamp |
+| Bold, headings, lists, links | Applied immediately | Recorded as format changes that can be rejected back to the original |
+| Images, table rows and columns | Inserted or removed immediately | Each tracked as one reviewable change |
+| Review | Not available | `accept` / `reject` / `acceptAll` / `rejectAll`, plus a live list of pending suggestions |
+| Final text | The document *is* the final text | `getCleanHtml()` gives the accepted version, while the tracked version stays editable |
+| Saving and reloading | StarterKit reads a stored `<del>` as plain strikethrough | Suggestions round-trip through HTML or JSON intact |
+| Pasted images | Inserted as-is: base64 blobs, or links to someone else's file | Uploaded to your storage; Google Drive / OneDrive / Dropbox links are copied too |
+| Character limits | `CharacterCount` also counts text that is deleted but not yet accepted | Counts the text as it will read once accepted (CJK-aware) |
+| Restricting a field | StarterKit enables every format, shortcut and paste | Only enabled formatting exists in the schema, so a plain-text field stays plain |
+| UI | Bring your own | Ready-made editor and toolbar for Vue, React and vanilla JS, plus screen and print CSS |
+
 ## Quick start
 
 Pick your framework. Every editor takes the same options.
@@ -60,9 +78,12 @@ Pick your framework. Every editor takes the same options.
 ### Vue 3
 
 ```bash
-npm i track-changes-vue track-changes-core track-changes-styles \
-      @tiptap/core @tiptap/starter-kit @tiptap/vue-3 vue
+npm i track-changes-vue track-changes-core track-changes-styles vue \
+      @tiptap/core@^2 @tiptap/pm@^2 @tiptap/starter-kit@^2 @tiptap/vue-3@^2
 ```
+
+> The `@^2` pins matter: these packages support Tiptap 2. A bare
+> `npm i @tiptap/core` installs Tiptap 3 and fails with a peer-dependency error.
 
 ```vue
 <script setup lang="ts">
@@ -87,8 +108,8 @@ const html = ref('<p>Hello</p>')
 ### React 18 / 19
 
 ```bash
-npm i track-changes-react track-changes-core track-changes-styles \
-      @tiptap/core @tiptap/starter-kit @tiptap/react react react-dom
+npm i track-changes-react track-changes-core track-changes-styles react react-dom \
+      @tiptap/core@^2 @tiptap/pm@^2 @tiptap/starter-kit@^2 @tiptap/react@^2
 ```
 
 ```tsx
@@ -117,7 +138,7 @@ export function Field() {
 
 ```bash
 npm i track-changes-vanilla track-changes-core track-changes-styles \
-      @tiptap/core @tiptap/pm @tiptap/starter-kit
+      @tiptap/core@^2 @tiptap/pm@^2 @tiptap/starter-kit@^2
 ```
 
 ```ts
@@ -218,6 +239,7 @@ npm install        # install the workspace
 npm run build      # build core, then the vue/react/vanilla adapters
 npm run test       # core suite + react/vanilla adapter tests
 npm run lint       # type-check every package
+npm run demo       # run the live demo locally (http://localhost:5173)
 ```
 
 Each package is versioned independently. See its `CHANGELOG.md`.

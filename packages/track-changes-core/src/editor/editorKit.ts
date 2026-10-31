@@ -98,6 +98,22 @@ export function serializeEditor(editor: Editor, format: EditorFormat): Json | st
   return format === 'html' ? editor.getHTML() : (editor.getJSON() as Json);
 }
 
+/**
+ * Replace the whole document with stored content, as-is. Loading is not an
+ * edit: it must not be re-encoded as an insertion in suggesting mode, emit an
+ * update (hydration feedback loop), or be undoable.
+ */
+export function replaceEditorContent(editor: Editor, content: Json | string | null): void {
+  editor
+    .chain()
+    .command(({ tr }) => {
+      tagSuggestionTx(tr).setMeta('addToHistory', false);
+      return true;
+    })
+    .setContent(content || EMPTY_DOC, false)
+    .run();
+}
+
 /** Imperative operations every adapter exposes (Vue template ref, React ref, vanilla handle). */
 export interface TrackChangesEditorCommands {
   accept: (id: string) => void;

@@ -7,6 +7,7 @@ import {
 import { createRewriteSuggestingPlugin } from './rewrite';
 import { createTrackChangesStatePlugin } from './state';
 import { FORMAT_CHANGE, type FormatChangeAttrs } from './formatChange';
+import { SUGGESTION_PARSE_PRIORITY } from './marks';
 import {
   SUGGESTION_NODE_ATTR,
   suggestionFromDom,
@@ -71,7 +72,7 @@ export const InsertionMark = Mark.create({
     };
   },
   parseHTML() {
-    return [{ tag: 'ins[data-suggestion]' }];
+    return [{ tag: 'ins[data-suggestion]', priority: SUGGESTION_PARSE_PRIORITY }];
   },
   renderHTML({ HTMLAttributes }) {
     return ['ins', mergeAttributes({ class: 'tc-ins' }, HTMLAttributes), 0];
@@ -101,7 +102,7 @@ export const DeletionMark = Mark.create({
     };
   },
   parseHTML() {
-    return [{ tag: 'del[data-suggestion]' }];
+    return [{ tag: 'del[data-suggestion]', priority: SUGGESTION_PARSE_PRIORITY }];
   },
   renderHTML({ HTMLAttributes }) {
     return ['del', mergeAttributes({ class: 'tc-del' }, HTMLAttributes), 0];
@@ -151,7 +152,7 @@ export const FormatChangeMark = Mark.create({
     };
   },
   parseHTML() {
-    return [{ tag: 'span[data-suggestion-format]' }];
+    return [{ tag: 'span[data-suggestion-format]', priority: SUGGESTION_PARSE_PRIORITY }];
   },
   renderHTML({ mark, HTMLAttributes }) {
     const a = mark.attrs as FormatChangeAttrs;

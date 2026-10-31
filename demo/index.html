@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>track-changes · Word-style tracked changes for the web</title>
+    <meta
+      name="description"
+      content="Free, MIT-licensed suggesting mode for Tiptap/ProseMirror. Every edit becomes a suggestion you can accept or reject. Vue, React, or plain JavaScript."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#editor">Skip to the editor</a>
+
+    <header class="site-header">
+      <a class="brand" href="https://github.com/carsonhung/track-changes">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 6h10M4 12h7M4 18h12" />
+          <path class="brand-plus" d="M18 9v6M15 12h6" />
+        </svg>
+        <span>track-changes</span>
+      </a>
+      <nav class="site-nav" aria-label="Project links">
+        <a href="https://github.com/carsonhung/track-changes#readme">Docs</a>
+        <a href="https://www.npmjs.com/package/track-changes-core">npm</a>
+        <a class="nav-cta" href="https://github.com/carsonhung/track-changes">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.56 9.56 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"
+            />
+          </svg>
+          Star on GitHub
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">Free &amp; open source · MIT</p>
+        <h1>Word-style tracked changes for the web</h1>
+        <p class="lede">
+          Every edit becomes a suggestion your reviewers can <em>accept</em> or <em>reject</em>.
+          Built on Tiptap, for Vue, React, or plain JavaScript.
+        </p>
+        <div class="install">
+          <code id="install-cmd">npm i track-changes-vanilla</code>
+          <button type="button" class="icon-btn" id="copy-install" aria-label="Copy install command">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2" />
+              <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="workspace" aria-label="Live demo">
+        <div class="doc-panel">
+          <div class="controls">
+            <div class="segmented" role="radiogroup" aria-label="Editor mode">
+              <button type="button" role="radio" data-mode="suggesting" aria-checked="true">Suggesting</button>
+              <button type="button" role="radio" data-mode="editing" aria-checked="false">Editing</button>
+              <button type="button" role="radio" data-mode="viewing" aria-checked="false">Viewing</button>
+            </div>
+            <label class="author-picker">
+              <span>Writing as</span>
+              <select id="author">
+                <option value="alice">Alice</option>
+                <option value="bob">Bob</option>
+              </select>
+            </label>
+          </div>
+          <p class="mode-hint" id="mode-hint"></p>
+          <div class="paper" id="editor"></div>
+          <ul class="tips" aria-label="Things to try">
+            <li>Type or delete anything</li>
+            <li>Select text, press <kbd>B</kbd></li>
+            <li>Paste a screenshot or an image link</li>
+            <li>Add a table row</li>
+          </ul>
+        </div>
+
+        <aside class="review-panel" aria-labelledby="review-title">
+          <div class="review-head">
+            <h2 id="review-title">Suggestions <span class="badge" id="count">0</span></h2>
+            <div class="bulk">
+              <button type="button" class="btn btn-accept" id="accept-all">Accept all</button>
+              <button type="button" class="btn btn-reject" id="reject-all">Reject all</button>
+            </div>
+          </div>
+          <ul class="suggestions" id="suggestions"></ul>
+          <p class="empty" id="empty" hidden>
+            No pending suggestions. Switch to <strong>Suggesting</strong> and edit the document.
+          </p>
+        </aside>
+      </section>
+
+      <section class="output" aria-labelledby="output-title">
+        <div class="output-head">
+          <h2 id="output-title">What you store</h2>
+          <div class="tabs" role="tablist" aria-label="HTML output">
+            <button type="button" role="tab" id="tab-tracked" aria-selected="true" aria-controls="output-panel">
+              Tracked HTML
+            </button>
+            <button type="button" role="tab" id="tab-clean" aria-selected="false" aria-controls="output-panel">
+              Clean HTML (all accepted)
+            </button>
+          </div>
+        </div>
+        <p class="output-note">
+          Suggestions are plain <code>&lt;ins&gt;</code> / <code>&lt;del&gt;</code> tags. Save this
+          string anywhere and load it back with the suggestions intact.
+        </p>
+        <pre id="output-panel" role="tabpanel" tabindex="0"><code id="output"></code></pre>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        MIT licensed · Built on <a href="https://tiptap.dev">Tiptap</a> &amp;
+        <a href="https://prosemirror.net">ProseMirror</a> ·
+        <a href="https://github.com/carsonhung/track-changes">Source on GitHub</a>
+      </p>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

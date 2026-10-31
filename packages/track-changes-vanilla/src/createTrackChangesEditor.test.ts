@@ -85,6 +85,27 @@ describe('createTrackChangesEditor', () => {
     expect(counter.classList.contains('tc-charcount--over')).toBe(true);
   });
 
+  it('reloads stored suggestions even when formatting marks claim the same tags', () => {
+    const stored =
+      '<p>The <del data-suggestion="d1" data-author="bob" data-ts="1">old</del>' +
+      '<ins data-suggestion="i1" data-author="bob" data-ts="1">new</ins> ' +
+      '<span data-suggestion="f1" data-suggestion-format="add:bold" data-author="bob" data-ts="1">' +
+      '<strong>plan</strong></span></p>';
+    const { handle: h } = mount({ content: stored, features: [createFormattingFeature()] });
+    expect(h.listSuggestions().map((s) => [s.id, s.type])).toEqual([
+      ['d1', 'deletion'],
+      ['i1', 'insertion'],
+      ['f1', 'format'],
+    ]);
+    expect(h.getHTML()).not.toContain('<s>');
+
+    // Save → reload is stable.
+    const saved = h.getHTML()!;
+    h.setContent(saved);
+    expect(h.getHTML()).toBe(saved);
+    expect(h.listSuggestions()).toHaveLength(3);
+  });
+
   it('returns the document in the requested format and removes its DOM on destroy', () => {
     const { target, handle: h } = mount({ content: '<p>x</p>', format: 'html' });
     expect(h.getValue()).toBe('<p>x</p>');

@@ -4,7 +4,7 @@
 // { id, authorId, ts }), never plugin state / decorations — so suggestions
 // serialize, print, and (later) sync over Yjs without redesign.
 
-export { INSERTION, DELETION, insertionMarkSpec, deletionMarkSpec, insertionType, deletionType } from './marks';
+export { INSERTION, DELETION, SUGGESTION_PARSE_PRIORITY, insertionMarkSpec, deletionMarkSpec, insertionType, deletionType } from './marks';
 export type { SuggestionAttrs, SuggestionType } from './marks';
 
 export {
