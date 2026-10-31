@@ -2,7 +2,7 @@
   "name": "track-changes-react",
   "version": "0.1.1",
   "description": "React adapter for track-changes-core: a thin <TrackChangesEditor> built on @tiptap/react.",
-  "license": "AGPL-3.0-only OR LicenseRef-Commercial",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/carsonhung/track-changes.git",
@@ -30,8 +30,7 @@
   "sideEffects": false,
   "files": [
     "dist",
-    "NOTICE",
-    "COMMERCIAL-LICENSE.md"
+    "NOTICE"
   ],
   "scripts": {
     "build": "tsup",

@@ -1,10 +1,7 @@
 ﻿track-changes
 Copyright 2026 Dr. Carson Hung
 
-This software is dual-licensed:
-  - GNU Affero General Public License v3.0 only (see LICENSE), or
-  - a commercial license (see COMMERCIAL-LICENSE.md, or
-    https://github.com/carsonhung/track-changes/blob/master/COMMERCIAL-LICENSE.md).
+Licensed under the Apache License, Version 2.0 (see the LICENSE file).
 
 This is an independent project by Dr. Carson Hung, originally built for report
 revisions at the Technology-Enriched Learning Initiative (TELI), The University

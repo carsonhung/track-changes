@@ -9,10 +9,10 @@ It is feature-for-feature with [`track-changes-vue`](../track-changes-vue):
 both adapters are thin wrappers over the same core editor kit and render the
 same markup, so [`track-changes-styles`](../track-changes-styles) applies
 unchanged. See the Vue README for the feature plugins, the pasted-image
-localization rules, and the host integration contract ¡X all of it applies
+localization rules, and the host integration contract â€” all of it applies
 here as-is.
 
-AGPL-3.0 or commercial license, see [COMMERCIAL-LICENSE.md](./COMMERCIAL-LICENSE.md); only the MIT open-source tier of Tiptap is used.
+Apache 2.0 licensed; only the MIT open-source tier of Tiptap is used.
 
 ## Install
 
@@ -76,7 +76,7 @@ export function ReviewField() {
 | Prop | Type | Default | Notes |
 |---|---|---|---|
 | `value` | `object \| string \| null` | `null` | ProseMirror JSON **or** HTML. Read at mount; a still-empty editor accepts one later hydration (async-loaded data). After that the editor owns its document, so feeding `onChange` output back in is safe. Remount via `key` to load a different document. |
-| `onChange` | `(value) => void` | ¡X | Document in `format`, on every change. |
+| `onChange` | `(value) => void` | â€” | Document in `format`, on every change. |
 | `format` | `'json' \| 'html'` | `'json'` | `html` is lossless (`<ins>`/`<del>` + `data-suggestion-*`). |
 | `mode` | `'editing' \| 'suggesting' \| 'viewing'` | `'suggesting'` | Live-switchable. |
 | `authorId` | `string \| null` | `null` | Attributed on new suggestions. Live-switchable. |
@@ -86,8 +86,8 @@ export function ReviewField() {
 | `uploadHandler` | `(file) => Promise<{ src, alt? }>` | `null` | Host upload transport for the image feature. |
 | `maxCharacters` / `maxWords` | `number \| null` | `null` | Soft caps with a clean-projection counter (never hard-blocks input). |
 | `showCharacterCount` | `boolean` | `false` | Show the counter without a cap. |
-| `onReady` | `(editor) => void` | ¡X | Receives the Tiptap editor (again after a remount). |
-| `className` | `string` | ¡X | Extra class on the `.tc-editor` root. |
+| `onReady` | `(editor) => void` | â€” | Receives the Tiptap editor (again after a remount). |
+| `className` | `string` | â€” | Extra class on the `.tc-editor` root. |
 
 Imperative API via `ref` (`TrackChangesEditorRef`): `accept(id)`,
 `reject(id)`, `acceptAll()`, `rejectAll()`, `listSuggestions()`,

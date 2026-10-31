@@ -5,20 +5,20 @@ a `<TrackChangesEditor>` component built on `@tiptap/vue-3` with
 CKEditor-style **feature plugins** (formatting, image upload, tables) and
 Word-style **tracked changes** (suggesting mode).
 
-AGPL-3.0 or commercial license, see [COMMERCIAL-LICENSE.md](./COMMERCIAL-LICENSE.md). Every Tiptap dependency used here is from the MIT open-source
-tier ¡X no Tiptap Pro / commercial license is required.
+Apache 2.0 licensed. Every Tiptap dependency used here is from the MIT open-source
+tier â€” no Tiptap Pro / commercial license is required.
 
 ```
 +--------------------------------------------------------------+
 | host app (forms, persistence, storage, auth, env config)     |
-+--------------------------¡¶-----------------------------------+
-                           ¢x props + handlers (this contract)
-+--------------------------¢r-----------------------------------+
++--------------------------â–²-----------------------------------+
+                           â”‚ props + handlers (this contract)
++--------------------------â”´-----------------------------------+
 | track-changes-vue   <TrackChangesEditor>                     |
 |   feature plugins: formatting / imageUpload / table          |
-+--------------------------¡¶-----------------------------------+
-                           ¢x
-+--------------------------¢r-----------------------------------+
++--------------------------â–²-----------------------------------+
+                           â”‚
++--------------------------â”´-----------------------------------+
 | track-changes-core  (headless engine, PM/Tiptap)            |
 +--------------------------------------------------------------+
 ```
@@ -63,7 +63,7 @@ const html = ref<string | null>('<p>Initial content</p>')
 const features = [
   createFormattingFeature(),
   createImageUploadFeature({
-    // host glue ¡X see "Host integration contract"
+    // host glue â€” see "Host integration contract"
     ingestUrl: (url) => myBackend.ingestImage(url),
   }),
   createTableFeature(),
@@ -89,15 +89,15 @@ const upload = async (file: File) => ({ src: await myBackend.upload(file) })
 | Prop | Type | Default | Notes |
 |---|---|---|---|
 | `modelValue` | `object \| string \| null` | `null` | Input accepts a ProseMirror JSON doc **or** an HTML string, regardless of `format`. One-way after mount (the editor owns its document); re-mount via `:key` to load a different document. |
-| `format` | `'json' \| 'html'` | `'json'` | Format emitted via `update:modelValue`. `html` is lossless ¡X suggestions are real `<ins>`/`<del>` tags and `data-suggestion-*` attributes ¡X so the value can be stored as plain text in a DB and printed/PDF-rendered without the editor. |
+| `format` | `'json' \| 'html'` | `'json'` | Format emitted via `update:modelValue`. `html` is lossless â€” suggestions are real `<ins>`/`<del>` tags and `data-suggestion-*` attributes â€” so the value can be stored as plain text in a DB and printed/PDF-rendered without the editor. |
 | `mode` | `'editing' \| 'suggesting' \| 'viewing'` | `'suggesting'` | `suggesting` records every edit as a tracked change; `viewing` is read-only. |
 | `authorId` | `string \| null` | `null` | Attributed on new suggestions (`data-author`). |
 | `readonly` | `boolean` | `false` | |
 | `features` | `EditorFeature[]` | `[]` | Feature plugins composing extensions + toolbar (below). |
 | `extensions` | Tiptap `Extensions` | `[]` | Extra raw extensions, for hosts that need more than the built-in features. |
 | `uploadHandler` | `EditorUploadHandler \| null` | `null` | Host upload transport: `(file: File) => Promise<{ src, alt? }>`. |
-| `maxCharacters` | `number \| null` | `null` | Soft character cap: shows a clean-projection counter footer ("123 / 2,000") with an over-limit state. Input is never hard-blocked (tracked deletions keep text in the doc) ¡X enforce at submit time via the same projection (`countCleanText`). |
-| `maxWords` | `number \| null` | `null` | Soft word cap ("45 / 500w"), same semantics as `maxCharacters`; either or both can be set, and the footer highlights whichever cap is exceeded. Word counting is CJK-aware (each Chinese/Japanese character counts as one word, the MS Word ¦r? convention; Latin text splits on whitespace; mixed text composes). |
+| `maxCharacters` | `number \| null` | `null` | Soft character cap: shows a clean-projection counter footer ("123 / 2,000") with an over-limit state. Input is never hard-blocked (tracked deletions keep text in the doc) â€” enforce at submit time via the same projection (`countCleanText`). |
+| `maxWords` | `number \| null` | `null` | Soft word cap ("45 / 500w"), same semantics as `maxCharacters`; either or both can be set, and the footer highlights whichever cap is exceeded. Word counting is CJK-aware (each Chinese/Japanese character counts as one word, the MS Word å­—æ•° convention; Latin text splits on whitespace; mixed text composes). |
 | `showCharacterCount` | `boolean` | `false` | Show the counter footer even without a cap. |
 
 Imperative API via template ref (`TrackChangesEditorApi`): `accept(id)`,
@@ -111,15 +111,15 @@ accept/reject), use the `useTrackChangesReview(editorRef)` composable.
 ## Feature plugins
 
 Features are created per editor instance, so disabling a capability is just
-*not passing the feature* ¡X and the restriction is real, not cosmetic:
+*not passing the feature* â€” and the restriction is real, not cosmetic:
 
-- `createFormattingFeature({ buttons?, labels? })` ¡X bold / italic / strike /
+- `createFormattingFeature({ buttons?, labels? })` â€” bold / italic / strike /
   headings / lists. Without this feature the StarterKit formatting pieces are
   **disabled at the schema level**: no Ctrl+B, no markdown input rules, pasted
   formatting is stripped. `buttons` narrows further (a bold-only field rejects
   headings wholesale). In suggesting mode, toggles are recorded as reviewable
   `format_change` suggestions.
-- `createLinkFeature({ labels?, promptUrl? })` ¡X Set link / Remove link on the
+- `createLinkFeature({ labels?, promptUrl? })` â€” Set link / Remove link on the
   selection. Dependency-free `link` mark rendering `<a href>` with an enforced
   `rel="noopener noreferrer nofollow"`; only `http(s)`/`mailto` hrefs parse, so
   pasted `javascript:`/`data:` links are rejected at the schema level. The
@@ -127,9 +127,9 @@ Features are created per editor instance, so disabling a capability is just
   use your own dialog. In suggesting mode, setting/removing a link is recorded
   as a reviewable `format_change` suggestion.
 - `createImageUploadFeature({ labels?, accept?, ingestUrl?, localImageOrigins?, isLocalImageSrc?, onImagePaste?, pasteImageLinks?, uploadPastedFiles? })`
-  ¡X Insert/Remove image buttons (via `uploadHandler`), and every pasted or
+  â€” Insert/Remove image buttons (via `uploadHandler`), and every pasted or
   dropped image is copied into your storage: see below.
-- `createTableFeature({ labels?, rows?, cols?, withHeaderRow? })` ¡X Insert
+- `createTableFeature({ labels?, rows?, cols?, withHeaderRow? })` â€” Insert
   table / Add row / Delete row / Add column / Delete column. New tables get a
   `<th>` header row by default. Row ops are tracked per row; column ops are
   tracked as **one grouped suggestion** across all rows (shared suggestion
@@ -152,8 +152,8 @@ API):
 |---|---|
 | Image file (screenshot, copied file, drag-and-drop) | Uploaded via the editor's `uploadHandler` |
 | Bare image / cloud-share link | Copied via `ingestUrl` (see [Pasting a cloud link](#pasting-a-cloud-link)) |
-| Image inside copied web/doc content (`<img src="https://¡K">`) | Copied via `ingestUrl`; `src` swapped to your copy |
-| External image with no `ingestUrl` configured | Stripped ¡X never kept as a hotlink |
+| Image inside copied web/doc content (`<img src="https://â€¦">`) | Copied via `ingestUrl`; `src` swapped to your copy |
+| External image with no `ingestUrl` configured | Stripped â€” never kept as a hotlink |
 
 The `<img>` case is enforced by a reconciler that scans the doc on load and
 on every update, so it also catches programmatic inserts. Read-only views
@@ -165,7 +165,7 @@ are never mutated, so legacy stored content still renders.
 ### Storage on an `https://` origin (S3/GCS bucket, CDN)
 
 The editor decides what is "yours" by URL. Relative paths and `data:` URLs
-always are; **absolute `http(s)` URLs are not, unless you say so** ¡X list
+always are; **absolute `http(s)` URLs are not, unless you say so** â€” list
 your bucket/CDN origins, or every image you store would look external and
 be copied again:
 
@@ -184,29 +184,29 @@ won't loop copying it).
 ### Pasting a cloud link
 
 With `ingestUrl` set, pasting a **bare link** to an image or a cloud-storage
-share (`https://¡K/photo.png`, Google Drive, OneDrive/SharePoint, Dropbox,
+share (`https://â€¦/photo.png`, Google Drive, OneDrive/SharePoint, Dropbox,
 iCloud, Imgur) inserts the image instead of the link text:
 
-1. An "Importing image¡K" placeholder (`.tc-img-pending`) marks the paste
+1. An "Importing imageâ€¦" placeholder (`.tc-img-pending`) marks the paste
    point; the user can keep typing.
 2. The URL goes to `ingestUrl`. On success the image is inserted at the
-   placeholder ¡X a tracked insertion while suggesting.
+   placeholder â€” a tracked insertion while suggesting.
 3. On failure the URL is pasted as plain text (what a normal paste would
    have done).
 
 `onImagePaste` fires with `source: 'link'`. Which links are tried is decided
-by `isLikelyImageLink(url)` (exported); pass `pasteImageLinks: (url) => ¡K` to
+by `isLikelyImageLink(url)` (exported); pass `pasteImageLinks: (url) => â€¦` to
 use your own rule, or `false` to always paste links as text. A pasted link
 that is already on one of your `localImageOrigins` is inserted directly.
 
 The backend behind `ingestUrl` must **download the bytes and store its own
-copy** ¡X storing or proxying the original URL would bring back exactly the
+copy** â€” storing or proxying the original URL would bring back exactly the
 broken-image problem this feature exists to prevent.
 
 Share links usually point at a **viewer page**, not the file, so the backend
 endpoint behind `ingestUrl` should map them to direct downloads (e.g. Google
-Drive `¡K/file/d/<id>/view` ¡÷ `https://drive.google.com/uc?export=download&id=<id>`,
-Dropbox `?dl=0` ¡÷ `?dl=1`, OneDrive `¡K?download=1`), then reject anything
+Drive `â€¦/file/d/<id>/view` â†’ `https://drive.google.com/uc?export=download&id=<id>`,
+Dropbox `?dl=0` â†’ `?dl=1`, OneDrive `â€¦?download=1`), then reject anything
 whose response is not `image/*`. Private links fail cleanly (text fallback)
 unless the server has access.
 
@@ -225,7 +225,7 @@ type EditorUrlIngestHandler = (url: string) => Promise<{ src: string; alt?: stri
 
 Typical implementations:
 
-- **Data URL** (no backend): read the file/blob into a `data:` URL ¡X the
+- **Data URL** (no backend): read the file/blob into a `data:` URL â€” the
   document stays self-contained.
 - **Backend ingestion** (recommended for `ingestUrl`): browsers cannot fetch
   most cloud images (CORS), so POST the URL to a backend endpoint that fetches
@@ -236,7 +236,7 @@ Typical implementations:
 This repo's host backend implements the contract as
 `POST /api/attachments/:entityType/:entityId/ingest`
 (`apps/backend/src/modules/attachments` + `apps/backend/src/lib/urlIngest.ts`),
-configured entirely through environment variables ¡X this is where ".env"
+configured entirely through environment variables â€” this is where ".env"
 lives, **not** in this package:
 
 | Env var (host backend) | Default | Purpose |

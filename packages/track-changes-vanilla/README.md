@@ -2,7 +2,7 @@
 
 Framework-free adapter for [`track-changes-core`](../track-changes-core):
 mount a Word-style **tracked changes** (suggesting mode) Tiptap editor on any
-DOM element ¡X no Vue, no React.
+DOM element â€” no Vue, no React.
 
 It shares the core editor kit with [`track-changes-vue`](../track-changes-vue)
 and [`track-changes-react`](../track-changes-react): same options, same
@@ -11,7 +11,7 @@ counter markup, so [`track-changes-styles`](../track-changes-styles) applies
 unchanged. See the Vue README for the feature plugins, the pasted-image
 localization rules, and the host integration contract.
 
-AGPL-3.0 or commercial license, see [COMMERCIAL-LICENSE.md](./COMMERCIAL-LICENSE.md); only the MIT open-source tier of Tiptap is used.
+Apache 2.0 licensed; only the MIT open-source tier of Tiptap is used.
 
 ## Install
 
@@ -65,12 +65,12 @@ Appends a `.tc-editor` root to `target` and returns a handle.
 | `uploadHandler` | `(file) => Promise<{ src, alt? }>` | `null` | Change later with `setUploadHandler`. |
 | `maxCharacters` / `maxWords` | `number \| null` | `null` | Soft caps with a clean-projection counter. |
 | `showCharacterCount` | `boolean` | `false` | Show the counter without a cap. |
-| `onChange` | `(value) => void` | ¡X | Document in `format`, on every change. |
-| `onSuggestionsChange` | `(suggestions) => void` | ¡X | At mount and on every change. |
+| `onChange` | `(value) => void` | â€” | Document in `format`, on every change. |
+| `onSuggestionsChange` | `(suggestions) => void` | â€” | At mount and on every change. |
 
 Handle: `editor` (raw Tiptap), `element`, `getMode()`, `setMode(mode)`,
 `setReadonly(b)`, `setAuthor(id)`, `setUploadHandler(fn)`, `getValue()`,
-`setContent(value)` (explicit replace ¡X resets history, no `onChange`),
+`setContent(value)` (explicit replace â€” resets history, no `onChange`),
 `accept(id)`, `reject(id)`, `acceptAll()`, `rejectAll()`,
 `listSuggestions()`, `setSuggesting(on)`, `insertNode()`, `deleteNode()`,
 `getClean()`, `getHTML()`, `getCleanHtml()`, `destroy()`.

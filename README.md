@@ -1,6 +1,6 @@
 # track-changes
 
-**Word-style tracked changes for the web — open source, framework-agnostic.**
+**Word-style tracked changes for the web — free, open source, framework-agnostic.**
 
 Add "Suggesting mode" to any rich-text field: every edit becomes a
 suggestion your reviewers can **accept or reject**, just like Microsoft Word
@@ -11,7 +11,7 @@ ready-made editors for **Vue**, **React**, and **plain JavaScript**.
 [![npm vue](https://img.shields.io/npm/v/track-changes-vue?label=vue)](https://www.npmjs.com/package/track-changes-vue)
 [![npm react](https://img.shields.io/npm/v/track-changes-react?label=react)](https://www.npmjs.com/package/track-changes-react)
 [![npm vanilla](https://img.shields.io/npm/v/track-changes-vanilla?label=vanilla)](https://www.npmjs.com/package/track-changes-vanilla)
-[![license: AGPL-3.0 or commercial](https://img.shields.io/badge/license-AGPL--3.0%20%7C%20commercial-blue.svg)](COMMERCIAL-LICENSE.md)
+[![license: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 ### ▶ [Try the live demo](https://carsonhung.github.io/track-changes/)
 
@@ -26,11 +26,10 @@ alongside: [Vanilla JS](https://carsonhung.github.io/track-changes/) ·
 
 ## Why track-changes?
 
-Track changes is usually locked inside a full commercial editor suite
-(CKEditor 5's Track Changes, for example). This project gives you the same
-workflow as a focused add-on to the free, MIT-licensed tier of
-Tiptap/ProseMirror. It's open source under the AGPL-3.0, with a
-[commercial license](COMMERCIAL-LICENSE.md) for closed-source products.
+Track changes is usually a **paid add-on** for rich-text editors (CKEditor 5's
+Track Changes, for example, is a commercial feature). This project gives you
+the same workflow under the Apache 2.0 license, on top of only the free,
+MIT-licensed tier of Tiptap/ProseMirror.
 
 - ✍️ **Real suggesting mode.** Typing, deleting, pasting, formatting (bold,
   italic, headings, lists, links), images, table rows and columns are all
@@ -234,9 +233,7 @@ Read more in the [architecture notes](docs/track-changes-architecture.md).
 - Comment threads on suggestions
 - Icon toolbar theme
 
-Ideas and pull requests are welcome. Please open an issue first for larger
-changes, and see [CONTRIBUTING.md](CONTRIBUTING.md) for how contributions are
-licensed.
+Ideas and pull requests are welcome. Please open an issue first for larger changes.
 
 ## Development
 
@@ -252,15 +249,7 @@ Each package is versioned independently. See its `CHANGELOG.md`.
 
 ## License
 
-Copyright 2026 Dr. Carson Hung. Dual-licensed:
-
-- **[AGPL-3.0](LICENSE)**: free, if the application you use it in is also
-  released as open source under the AGPL.
-- **[Commercial license](COMMERCIAL-LICENSE.md)**: for closed-source,
-  commercial, SaaS and internal products.
-  [Request one](https://github.com/carsonhung/track-changes/issues/new?template=commercial-license.yml).
-
-Versions released earlier under MIT (`track-changes-vue` ≤ 0.12.0,
-`track-changes-react` 0.1.0) remain MIT. An independent project, originally
-built for report revisions at the Technology-Enriched Learning Initiative, The
-University of Hong Kong.
+[Apache License 2.0](LICENSE), Copyright 2026 Dr. Carson Hung. Free for
+commercial use, with an explicit patent grant. See [NOTICE](NOTICE). An
+independent project, originally built for report revisions at the
+Technology-Enriched Learning Initiative, The University of Hong Kong.
